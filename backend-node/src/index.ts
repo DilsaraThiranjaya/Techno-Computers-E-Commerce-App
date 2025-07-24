@@ -1,13 +1,52 @@
-import app from "./app";
-import dotenv from "dotenv";
-import DBConnection from "./db/DBConnection";
+import app from './app';
+import { Database } from './db';
 
-dotenv.config();
+const PORT = process.env.PORT || 3000;
 
-DBConnection().then(result => console.log(result));
+const startServer = async () => {
+  try {
+    // Connect to database
+    await Database.connect();
+    
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`
+╔════════════════════════════════════════════════════════════════════════════════════════╗
+║                          🚀 TECHNO COMPUTERS API SERVER                                ║
+╠════════════════════════════════════════════════════════════════════════════════════════╣
+║  🌐 Server running on: http://localhost:${PORT}                                            ║
+║  📚 Environment: ${process.env.NODE_ENV || 'development'}                                                      ║
+║  🗄️  Database: Connected to MongoDB                                                   ║
+║  📁 Static files: /uploads                                                            ║
+║  🔧 API Base URL: http://localhost:${PORT}/api                                             ║
+╠════════════════════════════════════════════════════════════════════════════════════════╣
+║  📋 Available Endpoints:                                                              ║
+║     • GET  /api/health           - Health check                                       ║
+║     • POST /api/auth/login       - User login                                        ║
+║     • POST /api/auth/register    - User registration                                  ║
+║     • GET  /api/products         - Get all products                                  ║
+║     • POST /api/contact          - Send contact message                              ║
+╚════════════════════════════════════════════════════════════════════════════════════════╝
+      `);
+    });
 
-const port = process.env.PORT || 3000;
+    // Graceful shutdown
+    process.on('SIGTERM', async () => {
+      console.log('SIGTERM received. Shutting down gracefully...');
+      await Database.disconnect();
+      process.exit(0);
+    });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
+    process.on('SIGINT', async () => {
+      console.log('SIGINT received. Shutting down gracefully...');
+      await Database.disconnect();
+      process.exit(0);
+    });
+
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();

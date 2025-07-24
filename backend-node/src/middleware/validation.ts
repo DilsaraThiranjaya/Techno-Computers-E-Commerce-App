@@ -1,179 +1,153 @@
 import { Request, Response, NextFunction } from 'express';
-import { body, validationResult, ValidationChain } from 'express-validator';
+import { ResponseUtil } from '../utils/response';
 
-// Validation error handler
-export const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
-  const errors = validationResult(req);
-  
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: errors.array()
-    });
+export class ValidationMiddleware {
+  static validateEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   }
-  
-  next();
-};
 
-// User validation rules
-export const validateUserRegistration: ValidationChain[] = [
-  body('fullName')
-    .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Full name must be between 2 and 100 characters'),
-  
-  body('username')
-    .trim()
-    .isLength({ min: 3, max: 30 })
-    .withMessage('Username must be between 3 and 30 characters')
-    .matches(/^[a-zA-Z0-9_]+$/)
-    .withMessage('Username can only contain letters, numbers, and underscores'),
-  
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please provide a valid email address'),
-  
-  body('phone')
-    .matches(/^[0-9+\-\s()]+$/)
-    .withMessage('Please provide a valid phone number'),
-  
-  body('address')
-    .trim()
-    .isLength({ min: 5, max: 500 })
-    .withMessage('Address must be between 5 and 500 characters'),
-  
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number')
-];
+  static validatePassword(password: string): boolean {
+    return !!password && password.length >= 6;
+  }
 
-export const validateUserLogin: ValidationChain[] = [
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please provide a valid email address'),
-  
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-];
+  static validatePhone(phone: string): boolean {
+    const phoneRegex = /^[0-9+\-\s()]+$/;
+    return phoneRegex.test(phone);
+  }
 
-export const validateUserUpdate: ValidationChain[] = [
-  body('fullName')
-    .optional()
-    .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Full name must be between 2 and 100 characters'),
-  
-  body('phone')
-    .optional()
-    .matches(/^[0-9+\-\s()]+$/)
-    .withMessage('Please provide a valid phone number'),
-  
-  body('address')
-    .optional()
-    .trim()
-    .isLength({ min: 5, max: 500 })
-    .withMessage('Address must be between 5 and 500 characters')
-];
+  static validateRequired(fields: string[]): (req: Request, res: Response, next: NextFunction) => void {
+    return (req: Request, res: Response, next: NextFunction): void => {
+      const missingFields: string[] = [];
 
-// Product validation rules
-export const validateProduct: ValidationChain[] = [
-  body('name')
-    .trim()
-    .isLength({ min: 2, max: 200 })
-    .withMessage('Product name must be between 2 and 200 characters'),
-  
-  body('description')
-    .trim()
-    .isLength({ min: 10, max: 1000 })
-    .withMessage('Description must be between 10 and 1000 characters'),
-  
-  body('price')
-    .isFloat({ min: 0 })
-    .withMessage('Price must be a positive number'),
-  
-  body('category')
-    .isMongoId()
-    .withMessage('Please provide a valid category ID'),
-  
-  body('stock')
-    .isInt({ min: 0 })
-    .withMessage('Stock must be a non-negative integer')
-];
+      for (const field of fields) {
+        if (!req.body[field] || req.body[field].toString().trim() === '') {
+          missingFields.push(field);
+        }
+      }
 
-// Category validation rules
-export const validateCategory: ValidationChain[] = [
-  body('name')
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('Category name must be between 2 and 50 characters'),
-  
-  body('icon')
-    .trim()
-    .notEmpty()
-    .withMessage('Category icon is required'),
-  
-  body('description')
-    .trim()
-    .isLength({ min: 5, max: 200 })
-    .withMessage('Description must be between 5 and 200 characters')
-];
+      if (missingFields.length > 0) {
+        ResponseUtil.validation(
+            res,
+            'Required fields are missing',
+            `Missing fields: ${missingFields.join(', ')}`
+        );
+        return;
+      }
 
-// Order validation rules
-export const validateOrder: ValidationChain[] = [
-  body('items')
-    .isArray({ min: 1 })
-    .withMessage('Order must contain at least one item'),
-  
-  body('items.*.product')
-    .isMongoId()
-    .withMessage('Please provide valid product IDs'),
-  
-  body('items.*.quantity')
-    .isInt({ min: 1 })
-    .withMessage('Quantity must be at least 1'),
-  
-  body('shippingAddress.fullName')
-    .trim()
-    .notEmpty()
-    .withMessage('Full name is required'),
-  
-  body('shippingAddress.phone')
-    .matches(/^[0-9+\-\s()]+$/)
-    .withMessage('Please provide a valid phone number'),
-  
-  body('shippingAddress.email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please provide a valid email address'),
-  
-  body('shippingAddress.address')
-    .trim()
-    .notEmpty()
-    .withMessage('Address is required'),
-  
-  body('shippingAddress.city')
-    .trim()
-    .notEmpty()
-    .withMessage('City is required'),
-  
-  body('paymentMethod')
-    .isIn(['cod', 'card', 'bank'])
-    .withMessage('Payment method must be cod, card, or bank')
-];
+      next();
+      return;
+    };
+  }
 
-// Cart validation rules
-export const validateCartItem: ValidationChain[] = [
-  body('productId')
-    .isMongoId()
-    .withMessage('Please provide a valid product ID'),
-  
-  body('quantity')
-    .isInt({ min: 1 })
-    .withMessage('Quantity must be at least 1')
-];
+  static validateLogin(req: Request, res: Response, next: NextFunction): void {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      ResponseUtil.validation(res, 'Email and password are required');
+      return;
+    }
+
+    if (!ValidationMiddleware.validateEmail(email)) {
+      ResponseUtil.validation(res, 'Please provide a valid email');
+      return;
+    }
+
+    next();
+    return;
+  }
+
+  static validateRegister(req: Request, res: Response, next: NextFunction): void {
+    const { firstName, lastName, email, password, phone } = req.body;
+
+    if (!firstName || !lastName || !email || !password) {
+      ResponseUtil.validation(res, 'First name, last name, email, and password are required');
+      return;
+    }
+
+    if (!ValidationMiddleware.validateEmail(email)) {
+      ResponseUtil.validation(res, 'Please provide a valid email');
+      return;
+    }
+
+    if (!ValidationMiddleware.validatePassword(password)) {
+      ResponseUtil.validation(res, 'Password must be at least 6 characters long');
+      return;
+    }
+
+    if (phone && !ValidationMiddleware.validatePhone(phone)) {
+      ResponseUtil.validation(res, 'Please provide a valid phone number');
+      return;
+    }
+
+    next();
+    return;
+  }
+
+  static validateProduct(req: Request, res: Response, next: NextFunction): void {
+    const { name, description, price, category, brand, stock } = req.body;
+
+    if (!name || !description || !price || !category || !brand || stock === undefined) {
+      ResponseUtil.validation(res, 'Name, description, price, category, brand, and stock are required');
+      return;
+    }
+
+    if (isNaN(price) || price < 0) {
+      ResponseUtil.validation(res, 'Price must be a positive number');
+      return;
+    }
+
+    if (isNaN(stock) || stock < 0) {
+      ResponseUtil.validation(res, 'Stock must be a non-negative number');
+      return;
+    }
+
+    next();
+    return;
+  }
+
+  static validateCategory(req: Request, res: Response, next: NextFunction): void {
+    const { name } = req.body;
+
+    if (!name || name.trim() === '') {
+      ResponseUtil.validation(res, 'Category name is required');
+      return;
+    }
+
+    next();
+    return;
+  }
+
+  static validateOrder(req: Request, res: Response, next: NextFunction): void {
+    const { items, shippingAddress, paymentMethod } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      ResponseUtil.validation(res, 'Order items are required');
+      return;
+    }
+
+    if (
+        !shippingAddress ||
+        !shippingAddress.firstName ||
+        !shippingAddress.lastName ||
+        !shippingAddress.address ||
+        !shippingAddress.city ||
+        !shippingAddress.postalCode ||
+        !shippingAddress.phone
+    ) {
+      ResponseUtil.validation(res, 'Complete shipping address is required');
+      return;
+    }
+
+    if (
+        !paymentMethod ||
+        !['cash_on_delivery', 'card', 'bank_transfer'].includes(paymentMethod)
+    ) {
+      ResponseUtil.validation(res, 'Valid payment method is required');
+      return;
+    }
+
+    next();
+    return;
+  }
+}

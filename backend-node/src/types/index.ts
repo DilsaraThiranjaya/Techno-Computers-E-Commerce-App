@@ -1,28 +1,17 @@
+import { Request } from 'express';
 import { Document } from 'mongoose';
 
 export interface IUser extends Document {
   _id: string;
-  fullName: string;
-  username: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  phone: string;
-  address: string;
   password: string;
-  role: 'customer' | 'admin';
+  phone?: string;
+  address?: string;
+  role: 'admin' | 'customer';
+  status: 'active' | 'inactive';
   profileImage?: string;
-  status: 'active' | 'inactive';
-  memberSince: Date;
-  createdAt: Date;
-  updatedAt: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>;
-}
-
-export interface ICategory extends Document {
-  _id: string;
-  name: string;
-  icon: string;
-  description: string;
-  status: 'active' | 'inactive';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,65 +21,100 @@ export interface IProduct extends Document {
   name: string;
   description: string;
   price: number;
-  image: string;
-  category: ICategory['_id'];
+  discountPrice?: number;
+  category: string;
+  brand: string;
   stock: number;
-  inStock: boolean;
+  images: string[];
+  specifications: {
+    processor?: string;
+    ram?: string;
+    storage?: string;
+    graphics?: string;
+    display?: string;
+    [key: string]: any;
+  };
+  status: 'active' | 'inactive';
+  featured: boolean;
+  rating: number;
+  reviewCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface ICartItem {
-  product: IProduct['_id'];
+export interface ICategory extends Document {
+  _id: string;
+  name: string;
+  description?: string;
+  image?: string;
+  status: 'active' | 'inactive';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ICartItem extends Document {
+  _id: string;
+  cartId: string;
+  productId: string;
   quantity: number;
   price: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ICart extends Document {
   _id: string;
-  user: IUser['_id'];
+  userId: string;
   items: ICartItem[];
   totalAmount: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface IOrderItem {
-  product: IProduct['_id'];
+export interface IOrderItem extends Document {
+  _id: string;
+  orderId: string;
+  productId: string;
   quantity: number;
   price: number;
-  name: string;
-}
-
-export interface IOrder extends Document {
-  _id: string;
-  user: IUser['_id'];
-  items: IOrderItem[];
-  totalAmount: number;
-  shippingAddress: {
-    fullName: string;
-    phone: string;
-    email: string;
-    address: string;
-    city: string;
-    postalCode?: string;
-  };
-  paymentMethod: 'cod' | 'card' | 'bank';
-  paymentStatus: 'pending' | 'completed' | 'failed';
-  orderStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  specialInstructions?: string;
+  totalPrice: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface AuthRequest extends Request {
+export interface IOrder extends Document {
+  _id: string;
+  userId: string;
+  orderNumber: string;
+  items: IOrderItem[];
+  totalAmount: number;
+  shippingAddress: {
+    firstName: string;
+    lastName: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    phone: string;
+  };
+  paymentMethod: 'cash_on_delivery' | 'card' | 'bank_transfer';
+  paymentStatus: 'pending' | 'paid' | 'failed';
+  orderStatus: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AuthenticatedRequest extends Request {
   user?: IUser;
+  userId?: string;
 }
 
 export interface JWTPayload {
-  id: string;
+  userId: string;
   email: string;
-  role: 'customer' | 'admin';
+  role: string;
+  iat?: number;
+  exp?: number;
 }
 
 export interface ApiResponse<T = any> {
@@ -98,26 +122,22 @@ export interface ApiResponse<T = any> {
   message: string;
   data?: T;
   error?: string;
+  statusCode: number;
 }
 
 export interface PaginationQuery {
   page?: number;
   limit?: number;
   sort?: string;
+  order?: 'asc' | 'desc';
   search?: string;
 }
 
-export interface AdminStats {
-  totalCustomers: number;
-  activeCustomers: number;
-  inactiveCustomers: number;
-  newThisMonth: number;
-  totalProducts: number;
-  inStockProducts: number;
-  outOfStockProducts: number;
-  totalCategories: number;
-  totalOrders: number;
-  pendingOrders: number;
-  todaysRevenue: number;
-  monthlyRevenue: number;
+export interface ProductFilter extends PaginationQuery {
+  category?: string;
+  brand?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  featured?: boolean;
+  status?: string;
 }

@@ -1,55 +1,58 @@
-import express, { Express } from "express";
-import productRouter from "./routes/product.route";
-import contactRouter from "./routes/contact.route";
-import cors from "cors";
-import authRouters from "./routes/auth.routes";
-import {authenticateToken} from "./middleware/auth.middleware";
-import path from "path";
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import dotenv from 'dotenv';
 
-let app: Express = express();
+// Import middleware
+import { ErrorHandler } from './middleware/errorHandler';
 
-app.use(express.json());
+// Import routes
+import authRoutes from './routes/auth.routes';
+import productRoutes from './routes/product.routes';
+import contactRoutes from './routes/contact.route';
 
-const allowedOrigins = [
-    "http://localhost:5173",
-];
+// Load environment variables
+dotenv.config();
 
+const app = express();
+
+// CORS configuration
 const corsOptions = {
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            console.log('Blocked by CORS:', origin);
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
-    credentials: true,
-    optionsSuccessStatus: 200
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-frontend-domain.com'] 
+    : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
+// Middleware
 app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static files
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+// Serve static files
+app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 
-// Common Routers
-app.use("/api/auth",authRouters);
-app.use("/api/contacts", contactRouter);
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/contact', contactRoutes);
 
-// Admin Routers
-// app.use("/api/customers", customerRouter);
-app.use("/api/products", authenticateToken, productRouter);
-// app.use('/api/categories', categoryRouter);
-// app.use('/api/orders', orderRouter);
+// Health check route
+app.get('/api/health', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Techno Computers API is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
 
-// Customer Routers
-// app.use("/api/store", storeRouter);
-// app.use('/api/cart', cartRouter);
-// app.use('/api/my_orders',);
+// 404 handler
+app.use(ErrorHandler.notFound);
 
-// Profile Routers
-// app.use('/api/customer', customerRouter);
-// app.use('/api/admin', adminRouter);
+// Global error handler
+app.use(ErrorHandler.handle);
 
 export default app;

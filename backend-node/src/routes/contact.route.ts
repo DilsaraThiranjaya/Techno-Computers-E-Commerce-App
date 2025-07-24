@@ -1,9 +1,10 @@
-import {Router} from "express";
-import {saveContact, getAllContacts} from "../controllers/contact.controller";
+import { Router } from 'express';
+import { ContactController } from '../controllers/contact.controller';
 
-const contactRouter: Router = Router();
+const router = Router();
 
-contactRouter.get("/all", getAllContacts);
-contactRouter.post("/save", saveContact)
+// Public routes
+router.post('/', ContactController.sendContactMessage);
+router.get('/info', ContactController.getContactInfo);
 
-export default contactRouter;
+export default router;

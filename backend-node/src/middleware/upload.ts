@@ -1,45 +1,52 @@
-import multer from 'multer';
+import multer, { FileFilterCallback, Multer } from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { Request } from 'express';
 
-// Configure storage
+// Ensure upload directory exists
+const uploadDir = process.env.FILE_UPLOAD_PATH || './public/uploads';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Storage configuration
 const storage = multer.diskStorage({
-  destination: (req: Request, file: Express.Multer.File, cb) => {
-    cb(null, process.env.FILE_UPLOAD_PATH || './public/uploads');
+  destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
+    cb(null, uploadDir);
   },
-  filename: (req: Request, file: Express.Multer.File, cb) => {
-    // Create unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  filename: (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const extension = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + extension);
   }
 });
 
 // File filter
-const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  // Check file type
-  const allowedTypes = /jpeg|jpg|png|gif|webp/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
-
-  if (mimetype && extname) {
-    return cb(null, true);
+const fileFilter = (req: Request, file: Express.Multer.File, cb: FileFilterCallback) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed (jpeg, jpg, png, gif, webp)'));
+    cb(new Error('Only image files are allowed'));
   }
 };
 
-// Configure multer
-const upload = multer({
-  storage: storage,
+// Upload middleware
+export const upload = multer({
+  storage,
   limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE || '5242880') // 5MB default
+    fileSize: parseInt(process.env.MAX_FILE_SIZE || '5242880'), // 5MB
+    files: 5
   },
-  fileFilter: fileFilter
+  fileFilter
 });
 
-export default upload;
-
-// Specific upload configurations
+// Single file upload
 export const uploadSingle = (fieldName: string) => upload.single(fieldName);
-export const uploadMultiple = (fieldName: string, maxCount: number) => upload.array(fieldName, maxCount);
-export const uploadFields = (fields: { name: string; maxCount: number }[]) => upload.fields(fields);
+
+// Multiple files upload
+export const uploadMultiple = (fieldName: string, maxCount: number = 5) =>
+    upload.array(fieldName, maxCount);
+
+// Mixed fields upload
+export const uploadFields = (fields: { name: string; maxCount: number }[]) =>
+    upload.fields(fields);
