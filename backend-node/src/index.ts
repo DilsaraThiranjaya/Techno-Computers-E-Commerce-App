@@ -1,5 +1,5 @@
 import app from './app';
-import { Database } from './db';
+import { Database } from './db/DBConnection';
 
 const PORT = process.env.PORT || 3000;
 
@@ -19,13 +19,6 @@ const startServer = async () => {
 ║  🗄️  Database: Connected to MongoDB                                                   ║
 ║  📁 Static files: /uploads                                                            ║
 ║  🔧 API Base URL: http://localhost:${PORT}/api                                             ║
-╠════════════════════════════════════════════════════════════════════════════════════════╣
-║  📋 Available Endpoints:                                                              ║
-║     • GET  /api/health           - Health check                                       ║
-║     • POST /api/auth/login       - User login                                        ║
-║     • POST /api/auth/register    - User registration                                  ║
-║     • GET  /api/products         - Get all products                                  ║
-║     • POST /api/contact          - Send contact message                              ║
 ╚════════════════════════════════════════════════════════════════════════════════════════╝
       `);
     });

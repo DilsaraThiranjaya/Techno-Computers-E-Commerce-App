@@ -6,28 +6,21 @@ import { uploadMultiple } from '../middleware/upload';
 
 const router = Router();
 
+
 // Public routes
-router.get('/', ProductController.getAllProducts);
 router.get('/featured', ProductController.getFeaturedProducts);
+
+router.use(AuthMiddleware.authenticate);
+
+router.get('/', ProductController.getAllProducts);
 router.get('/search', ProductController.searchProducts);
-router.get('/category/:categoryName', ProductController.getProductsByCategory);
-router.get('/categories', ProductController.getAllCategories);
+router.get('/:categoryName', ProductController.getProductsByCategory);
 router.get('/:id', ProductController.getProductById);
 
-// Admin only routes
-router.use(AuthMiddleware.authenticate);
-router.use(AuthMiddleware.adminOnly);
-
-// Category management routes
-router.post('/category', ValidationMiddleware.validateCategory, ProductController.createCategory);
-router.put('/category/:id', ValidationMiddleware.validateCategory, ProductController.updateCategory);
-router.delete('/category/:id', ProductController.deleteCategory);
-router.get('/categories/stats', ProductController.getCategoryStats);
-
 // Product management routes
-router.post('/', uploadMultiple('images'), ValidationMiddleware.validateProduct, ProductController.createProduct);
-router.put('/:id', uploadMultiple('images'), ProductController.updateProduct);
-router.delete('/:id', ProductController.deleteProduct);
-router.get('/admin/stats', ProductController.getProductStats);
+router.post('/', uploadMultiple('images'), ValidationMiddleware.validateProduct, AuthMiddleware.adminOnly, ProductController.createProduct);
+router.put('/:id', uploadMultiple('images'), AuthMiddleware.adminOnly, ProductController.updateProduct);
+router.delete('/:id', AuthMiddleware.adminOnly, ProductController.deleteProduct);
+router.get('/admin/stats', AuthMiddleware.adminOnly, ProductController.getProductStats);
 
 export default router;

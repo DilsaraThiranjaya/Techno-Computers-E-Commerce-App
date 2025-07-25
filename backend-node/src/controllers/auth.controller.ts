@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { AuthService } from '../services/AuthService';
+import { AuthService } from '../services/auth.service';
 import { ResponseUtil } from '../utils/response';
 import { ErrorHandler } from '../middleware/errorHandler';
 import { AuthenticatedRequest } from '../types';
-import { LoginDto, RegisterDto, ChangePasswordDto } from '../dto';
+import { LoginDto, RegisterDto, ChangePasswordDto } from '../dto/Auth.dto';
 
 export class AuthController {
   static login = ErrorHandler.asyncHandler(async (req: Request, res: Response) => {
@@ -86,8 +86,6 @@ export class AuthController {
   });
 
   static logout = ErrorHandler.asyncHandler(async (req: Request, res: Response) => {
-    // In a real application, you might want to blacklist the token
-    // For now, we'll just return a success message
     return ResponseUtil.success(
       res, 
       'Logout successful'
