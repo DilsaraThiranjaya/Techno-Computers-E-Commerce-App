@@ -3,7 +3,7 @@ import { AuthService } from '../services/AuthService';
 import { ResponseUtil } from '../utils/response';
 import { ErrorHandler } from '../middleware/errorHandler';
 import { AuthenticatedRequest } from '../types';
-import { LoginDto, RegisterDto, ChangePasswordDto, UpdateUserDto } from '../dto';
+import { LoginDto, RegisterDto, ChangePasswordDto } from '../dto';
 
 export class AuthController {
   static login = ErrorHandler.asyncHandler(async (req: Request, res: Response) => {
@@ -62,7 +62,7 @@ export class AuthController {
 
   static updateProfile = ErrorHandler.asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.userId!;
-    const updateData: UpdateUserDto = req.body;
+    const updateData = req.body;
     
     const user = await AuthService.updateProfile(userId, updateData);
     

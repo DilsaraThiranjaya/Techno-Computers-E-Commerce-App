@@ -104,7 +104,6 @@ export interface CreateOrderDto {
   items: {
     productId: string;
     quantity: number;
-    price: number;
   }[];
   shippingAddress: {
     firstName: string;

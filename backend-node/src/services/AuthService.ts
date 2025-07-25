@@ -1,7 +1,7 @@
 import { User } from '../model/User';
 import { JWTUtil } from '../utils/jwt';
 import { EmailUtil } from '../utils/email';
-import { LoginDto, RegisterDto, ChangePasswordDto } from '../dto';
+import { LoginDto, RegisterDto, ChangePasswordDto, UpdateUserDto } from '../dto';
 import { IUser } from '../types';
 
 export class AuthService {

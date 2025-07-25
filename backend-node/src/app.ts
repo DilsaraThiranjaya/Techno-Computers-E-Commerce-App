@@ -10,6 +10,9 @@ import { ErrorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
 import contactRoutes from './routes/contact.route';
+import userRoutes from './routes/user.routes';
+import cartRoutes from './routes/cart.routes';
+import orderRoutes from './routes/order.routes';
 
 // Load environment variables
 dotenv.config();
@@ -38,6 +41,9 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

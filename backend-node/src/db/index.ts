@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { Category } from '../model/Category';
 
 export class Database {
   static async connect(): Promise<void> {
@@ -11,6 +12,10 @@ export class Database {
 
       await mongoose.connect(mongoUrl);
       console.log('✅ Connected to MongoDB successfully');
+      
+      // Create default categories
+      await (Category as any).createDefaults();
+      console.log('✅ Default categories initialized');
       
       // Handle connection events
       mongoose.connection.on('error', (error) => {

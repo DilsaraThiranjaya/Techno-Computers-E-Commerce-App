@@ -4,7 +4,7 @@ import { Category } from '../model/Category';
 import { ResponseUtil } from '../utils/response';
 import { ErrorHandler } from '../middleware/errorHandler';
 import { AuthenticatedRequest, ProductFilter } from '../types';
-import {CreateCategoryDto, CreateProductDto, UpdateProductDto} from '../dto';
+import { CreateCategoryDto, CreateProductDto, UpdateProductDto } from '../dto';
 
 export class ProductController {
   static getAllProducts = ErrorHandler.asyncHandler(async (req: Request, res: Response) => {
@@ -32,7 +32,7 @@ export class ProductController {
     if (category) {
       const categoryDoc = await Category.findOne({ name: category, status: 'active' });
       if (categoryDoc) {
-        filter.category = categoryDoc._id;
+        filter.category = categoryDoc.name;
       } else {
         // Early return with empty list if category doesn't exist
         return ResponseUtil.success(res, 'No products found', {
@@ -110,19 +110,15 @@ export class ProductController {
       return ResponseUtil.validation(res, 'Invalid category selected');
     }
 
-    // Create new product with category ID instead of name
+    // Create new product with category name
     const product = new Product({
       ...productData,
-      category: category._id // Use the ObjectId from the found category
+      category: category.name // Use the category name
     });
 
     await product.save();
 
-    // Populate category details in the response
-    const populatedProduct = await Product.findById(product._id)
-        .populate('category', 'name description');
-
-    return ResponseUtil.success(res, 'Product created successfully', populatedProduct, 201);
+    return ResponseUtil.success(res, 'Product created successfully', product, 201);
   });
 
   static updateProduct = ErrorHandler.asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
@@ -143,16 +139,13 @@ export class ProductController {
       if (!category) {
         return ResponseUtil.validation(res, 'Invalid category selected');
       }
-      updateData.category = category._id;
+      updateData.category = category.name;
     }
 
     Object.assign(product, updateData);
     await product.save();
 
-    const updatedProduct = await Product.findById(product._id)
-        .populate('category', 'name description');
-
-    return ResponseUtil.success(res, 'Product updated successfully', updatedProduct);
+    return ResponseUtil.success(res, 'Product updated successfully', product);
   });
 
   static deleteProduct = ErrorHandler.asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
@@ -175,7 +168,6 @@ export class ProductController {
     const { limit = 8 } = req.query;
 
     const products = await Product.find({ featured: true, status: 'active' })
-      .populate('category', 'name')
       .sort({ createdAt: -1 })
       .limit(Number(limit));
 
@@ -203,13 +195,12 @@ export class ProductController {
       });
     }
 
-    const products = await Product.find({ category: category._id, status: 'active' })
-        .populate('category', 'name')
+    const products = await Product.find({ category: categoryName, status: 'active' })
         .sort(sortObj)
         .skip(skip)
         .limit(Number(limit));
 
-    const total = await Product.countDocuments({ category: category._id, status: 'active' });
+    const total = await Product.countDocuments({ category: categoryName, status: 'active' });
     const totalPages = Math.ceil(total / Number(limit));
 
     return ResponseUtil.success(res, 'Products retrieved successfully', {
@@ -236,7 +227,6 @@ export class ProductController {
       $text: { $search: q as string },
       status: 'active'
     })
-      .populate('category', 'name')
       .sort({ score: { $meta: 'textScore' } })
       .skip(skip)
       .limit(Number(limit));
@@ -291,9 +281,108 @@ export class ProductController {
   static createCategory = ErrorHandler.asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
     const categoryData: CreateCategoryDto = req.body;
 
+    // Check if category already exists
+    const existingCategory = await Category.findOne({ 
+      name: { $regex: new RegExp(`^${categoryData.name}$`, 'i') } 
+    });
+    
+    if (existingCategory) {
+      return ResponseUtil.validation(res, 'Category with this name already exists');
+    }
     const category = new Category(categoryData);
     await category.save();
 
     return ResponseUtil.success(res, 'Category created successfully', category, 201);
+  });
+
+  static getAllCategories = ErrorHandler.asyncHandler(async (req: Request, res: Response) => {
+    const { status = 'active' } = req.query;
+    
+    const filter: any = {};
+    if (status) {
+      filter.status = status;
+    }
+
+    const categories = await Category.find(filter).sort({ name: 1 });
+
+    return ResponseUtil.success(res, 'Categories retrieved successfully', categories);
+  });
+
+  static updateCategory = ErrorHandler.asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    const category = await Category.findById(id);
+    if (!category) {
+      return ResponseUtil.notFound(res, 'Category not found');
+    }
+
+    // Check if name is being updated and if it already exists
+    if (updateData.name && updateData.name !== category.name) {
+      const existingCategory = await Category.findOne({ 
+        name: { $regex: new RegExp(`^${updateData.name}$`, 'i') },
+        _id: { $ne: id }
+      });
+      
+      if (existingCategory) {
+        return ResponseUtil.validation(res, 'Category with this name already exists');
+      }
+    }
+
+    Object.assign(category, updateData);
+    await category.save();
+
+    return ResponseUtil.success(res, 'Category updated successfully', category);
+  });
+
+  static deleteCategory = ErrorHandler.asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params;
+
+    const category = await Category.findById(id);
+    if (!category) {
+      return ResponseUtil.notFound(res, 'Category not found');
+    }
+
+    // Check if category is being used by any products
+    const productsUsingCategory = await Product.countDocuments({ category: id, status: 'active' });
+    if (productsUsingCategory > 0) {
+      return ResponseUtil.validation(res, 'Cannot delete category that is being used by products');
+    }
+
+    // Soft delete
+    category.status = 'inactive';
+    await category.save();
+
+    return ResponseUtil.success(res, 'Category deleted successfully');
+  });
+
+  static getCategoryStats = ErrorHandler.asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const totalCategories = await Category.countDocuments({ status: 'active' });
+    const inactiveCategories = await Category.countDocuments({ status: 'inactive' });
+    
+    const categoriesWithProductCount = await Category.aggregate([
+      { $match: { status: 'active' } },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: 'category',
+          as: 'products'
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          description: 1,
+          productCount: { $size: '$products' }
+        }
+      },
+      { $sort: { productCount: -1 } }
+    ]);
+    return ResponseUtil.success(res, 'Category statistics retrieved successfully', {
+      totalCategories,
+      inactiveCategories,
+      categoriesWithProductCount
+    });
   });
 }

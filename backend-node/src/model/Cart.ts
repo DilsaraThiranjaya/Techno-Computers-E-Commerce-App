@@ -2,11 +2,6 @@ import mongoose, { Schema } from 'mongoose';
 import { ICart, ICartItem } from '../types';
 
 const cartItemSchema = new Schema<ICartItem>({
-  cartId: {
-    type: String,
-    required: true,
-    ref: 'Cart'
-  },
   productId: {
     type: String,
     required: true,

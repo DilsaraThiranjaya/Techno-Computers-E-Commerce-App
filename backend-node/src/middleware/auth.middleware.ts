@@ -48,13 +48,8 @@ export class AuthMiddleware {
     return (req: Request, res: Response, next: NextFunction) => {
       const user = (req as Request & { user?: any }).user;
 
-      console.log(user);
-      console.log(roles);
-
       if (!user || !roles.includes(user.role)) {
-        return res.status(403).json({
-          error: "Access denied! You don't have permission to access this resource!"
-        });
+        return ResponseUtil.forbidden(res, "Access denied! You don't have permission to access this resource!");
       }
 
       return next();
