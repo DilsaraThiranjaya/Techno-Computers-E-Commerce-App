@@ -3,7 +3,7 @@ import { JWTUtil } from '../utils/jwt';
 import { EmailUtil } from '../utils/email';
 import { LoginDto, RegisterDto, ChangePasswordDto } from '../dto/Auth.dto';
 import { IUser } from '../types';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export class AuthService {
   static async login(loginData: LoginDto) {
