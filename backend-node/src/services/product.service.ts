@@ -84,7 +84,7 @@ export class ProductService {
 
         const product = new Product({
             ...productData,
-            category: category.name
+            category: category.id
         });
 
         await product.save();
@@ -105,7 +105,7 @@ export class ProductService {
             if (!category) {
                 throw new Error('Invalid category selected');
             }
-            updateData.category = category.name;
+            updateData.category = category.id;
         }
 
         Object.assign(product, updateData);

@@ -56,15 +56,12 @@ export class AuthService {
       throw new Error('User with this email already exists');
     }
 
-    // Hash password before saving
-    const hashedPassword = await bcrypt.hash(password, 12); // 12 is the salt rounds
-
     // Create new user
     const user = new User({
       firstName,
       lastName,
       email,
-      password: hashedPassword, // Store the hashed password
+      password,
       phone,
       address,
       role: role || 'customer'
@@ -157,9 +154,7 @@ export class AuthService {
       throw new Error('Current password is incorrect');
     }
 
-    // Hash new password before saving
-    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
-    user.password = hashedNewPassword;
+    user.password = newPassword;
     await user.save();
 
     return { message: 'Password changed successfully' };

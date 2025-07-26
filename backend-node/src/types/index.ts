@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export interface IUser extends Document {
   _id: string;
@@ -22,7 +22,7 @@ export interface IProduct extends Document {
   description: string;
   price: number;
   discountPrice?: number;
-  category: string;
+  category: Types.ObjectId | string;
   brand: string;
   stock: number;
   images: string[];
