@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../store/store.ts';
-import { loginUser, clearError } from '../../slices/authSlice.ts';
+import { AppDispatch, RootState } from '../../store/store';
+import { loginUser, clearError } from '../../slices/authSlice';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
 
 interface LoginForm {

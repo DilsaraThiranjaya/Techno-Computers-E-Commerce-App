@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../../store/store.ts';
-import { logout } from '../../slices/authSlice.ts';
-import { fetchCart } from '../../slices/cartSlice.ts';
+import { RootState, AppDispatch } from '../../store/store';
+import { logout } from '../../slices/authSlice';
+import { fetchCart } from '../../slices/cartSlice';
 import { 
   Search, 
   ShoppingCart, 

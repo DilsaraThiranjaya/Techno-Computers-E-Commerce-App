@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '../../store/store.ts';
-import { fetchFeaturedProducts } from '../../slices/productsSlice.ts';
-import Product from '../common/Product.tsx';
+import { AppDispatch, RootState } from '../../store/store';
+import { fetchFeaturedProducts } from '../../slices/productsSlice';
+import Product from '../common/Product';
 import { 
   ArrowRight, 
   Shield, 

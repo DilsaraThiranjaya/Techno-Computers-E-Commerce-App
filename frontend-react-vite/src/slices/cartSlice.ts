@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { cartAPI } from '../api.ts';
+import { cartAPI } from '../api';
 
 interface CartItem {
   _id: string;

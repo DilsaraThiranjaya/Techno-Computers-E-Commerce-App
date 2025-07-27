@@ -1,18 +1,22 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from './store/store.ts';
-import { fetchUserProfile } from './slices/authSlice.ts';
-import { isAuthenticated, getUserRole } from './auth/auth.ts';
+import type {AppDispatch, RootState} from './store/store';
+import { fetchUserProfile } from './slices/authSlice';
+import { isAuthenticated, getUserRole } from './auth/auth';
 
 // Layout Components
-import DefaultLayout from './view/common/DefaultLayout.tsx';
+import DefaultLayout from './view/common/DefaultLayout';
 
 // Page Components
-import Home from './view/pages/Home.tsx';
-import About from './view/pages/About.tsx';
-import Contact from './view/pages/Contact.tsx';
-import Login from './view/pages/Login.tsx';
+import Home from './view/pages/Home';
+import About from './view/pages/About';
+import Contact from './view/pages/Contact';
+import Login from './view/pages/Login';
+import Register from './view/pages/Register';
+import Products from './view/pages/Products';
+import ProductDetail from './view/pages/ProductDetail';
+import Cart from './view/pages/Cart';
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -76,32 +80,26 @@ const App: React.FC = () => {
             </PublicRoute>
           } />
           
+          <Route path="/register" element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          } />
+          
           {/* Routes with Default Layout */}
           <Route path="/" element={<DefaultLayout />}>
             <Route index element={<Home />} />
             <Route path="about" element={<About />} />
             <Route path="contact" element={<Contact />} />
             
-            {/* Protected Routes */}
-            <Route path="products" element={
-              <ProtectedRoute>
-                <div className="min-h-screen flex items-center justify-center">
-                  <div className="text-center">
-                    <h1 className="text-3xl font-bold text-secondary-900 mb-4">Products Page</h1>
-                    <p className="text-secondary-600">Coming soon...</p>
-                  </div>
-                </div>
-              </ProtectedRoute>
-            } />
+            {/* Public Product Routes */}
+            <Route path="products" element={<Products />} />
+            <Route path="product/:id" element={<ProductDetail />} />
             
+            {/* Protected Routes */}
             <Route path="cart" element={
               <ProtectedRoute>
-                <div className="min-h-screen flex items-center justify-center">
-                  <div className="text-center">
-                    <h1 className="text-3xl font-bold text-secondary-900 mb-4">Shopping Cart</h1>
-                    <p className="text-secondary-600">Coming soon...</p>
-                  </div>
-                </div>
+                <Cart />
               </ProtectedRoute>
             } />
             

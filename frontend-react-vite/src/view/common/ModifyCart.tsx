@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../store/store.ts';
-import { updateCartItem, removeFromCart } from '../../slices/cartSlice.ts';
+import { AppDispatch } from '../../store/store';
+import { updateCartItem, removeFromCart } from '../../slices/cartSlice';
 import { Minus, Plus, Trash2 } from 'lucide-react';
-import { CartItem } from '../../model/CartItem.ts';
+import { CartItem } from '../../model/CartItem';
 
 interface ModifyCartProps {
   item: CartItem;

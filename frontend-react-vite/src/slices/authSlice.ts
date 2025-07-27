@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { authAPI } from '../api.ts';
-import { setAuthData, logout as authLogout, getStoredUser } from '../auth/auth.ts';
+import { authAPI } from '../api';
+import { setAuthData, logout as authLogout, getStoredUser } from '../auth/auth';
 
 interface User {
   _id: string;

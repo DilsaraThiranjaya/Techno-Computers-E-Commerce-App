@@ -1,12 +1,14 @@
 import mongoose, { Schema } from 'mongoose';
 import { IOrder, IOrderItem } from '../types';
 
+const counterSchema = new Schema({
+  name: { type: String, required: true, unique: true },
+  value: { type: Number, required: true, default: 0 }
+});
+
+export const Counter = mongoose.model('Counter', counterSchema);
+
 const orderItemSchema = new Schema<IOrderItem>({
-  orderId: {
-    type: String,
-    required: true,
-    ref: 'Order'
-  },
   productId: {
     type: String,
     required: true,
@@ -109,15 +111,24 @@ orderSchema.index({ userId: 1, createdAt: -1 });
 orderSchema.index({ orderNumber: 1 });
 orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ paymentStatus: 1 });
-orderItemSchema.index({ orderId: 1 });
 
 // Generate order number before saving
 orderSchema.pre('save', async function(next) {
-  if (!this.orderNumber) {
-    const count = await mongoose.model('Order').countDocuments();
-    this.orderNumber = `TCO${String(count + 1).padStart(6, '0')}`;
+  if (!this.isNew || this.orderNumber) {
+    return next();
   }
-  next();
+
+  try {
+    const sequence = await Counter.findOneAndUpdate(
+        { name: 'orderNumber' },
+        { $inc: { value: 1 } },
+        { upsert: true, new: true }
+    );
+    this.orderNumber = `TCO${String(sequence.value).padStart(6, '0')}`;
+    next();
+  } catch (err) {
+    next(err as Error);
+  }
 });
 
 export const Order = mongoose.model<IOrder>('Order', orderSchema);
