@@ -1,4 +1,4 @@
-import { Order } from '../model/Order';
+import {Order, OrderItem} from '../model/Order';
 import { Cart } from '../model/Cart';
 import { Product } from '../model/Product';
 import { User } from '../model/User';
@@ -42,10 +42,15 @@ export class OrderService {
             await product.save();
         }
 
+        // Generate order number before saving
+        const count = await Order.countDocuments();
+        const orderNumber = `TCO${String(count + 1).padStart(6, '0')}`;
+
         // Create order
         const order = new Order({
             userId,
-            items: orderItems,
+            orderNumber: orderNumber,
+            items: [],
             totalAmount,
             shippingAddress: orderData.shippingAddress,
             paymentMethod: orderData.paymentMethod,
@@ -54,11 +59,14 @@ export class OrderService {
 
         await order.save();
 
-        // Set orderId for items (after save when _id is available)
-        order.items = order.items.map(item => ({
-            ...item.toObject(),
-            orderId: order._id.toString()
-        }));
+        const createdOrderItems = await OrderItem.insertMany(
+            orderItems.map(item => ({
+                ...item,
+                orderId: order._id
+            }))
+        );
+
+        order.items = createdOrderItems;
         await order.save();
 
         // Clear user's cart
