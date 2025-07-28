@@ -1,0 +1,191 @@
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { ProductState, Product } from '../../types';
+import apiService from '../../services/api';
+import toast from 'react-hot-toast';
+
+const initialState: ProductState = {
+  products: [],
+  featuredProducts: [],
+  currentProduct: null,
+  loading: false,
+  error: null,
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+  },
+  filters: {},
+};
+
+// Async thunks
+export const fetchProducts = createAsyncThunk(
+  'products/fetchProducts',
+  async (params: any = {}, { rejectWithValue }) => {
+    try {
+      const response = await apiService.getProducts(params);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch products');
+    }
+  }
+);
+
+export const fetchFeaturedProducts = createAsyncThunk(
+  'products/fetchFeaturedProducts',
+  async (limit: number = 8, { rejectWithValue }) => {
+    try {
+      const response = await apiService.getFeaturedProducts(limit);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch featured products');
+    }
+  }
+);
+
+export const fetchProductById = createAsyncThunk(
+  'products/fetchProductById',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await apiService.getProductById(id);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch product');
+    }
+  }
+);
+
+export const searchProducts = createAsyncThunk(
+  'products/searchProducts',
+  async (params: any, { rejectWithValue }) => {
+    try {
+      const response = await apiService.searchProducts(params);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to search products');
+    }
+  }
+);
+
+export const createProduct = createAsyncThunk(
+  'products/createProduct',
+  async (productData: any, { rejectWithValue }) => {
+    try {
+      const response = await apiService.createProduct(productData);
+      toast.success('Product created successfully!');
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to create product');
+    }
+  }
+);
+
+export const updateProduct = createAsyncThunk(
+  'products/updateProduct',
+  async ({ id, data }: { id: string; data: any }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.updateProduct(id, data);
+      toast.success('Product updated successfully!');
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update product');
+    }
+  }
+);
+
+export const deleteProduct = createAsyncThunk(
+  'products/deleteProduct',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await apiService.deleteProduct(id);
+      toast.success('Product deleted successfully!');
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete product');
+    }
+  }
+);
+
+const productSlice = createSlice({
+  name: 'products',
+  initialState,
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+    clearCurrentProduct: (state) => {
+      state.currentProduct = null;
+    },
+    setFilters: (state, action) => {
+      state.filters = action.payload;
+    },
+    clearFilters: (state) => {
+      state.filters = {};
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Fetch Products
+      .addCase(fetchProducts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProducts.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = action.payload.data;
+        if (action.payload.pagination) {
+          state.pagination = action.payload.pagination;
+        }
+      })
+      .addCase(fetchProducts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Featured Products
+      .addCase(fetchFeaturedProducts.fulfilled, (state, action) => {
+        state.featuredProducts = action.payload;
+      })
+      // Fetch Product by ID
+      .addCase(fetchProductById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProductById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentProduct = action.payload;
+      })
+      .addCase(fetchProductById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Search Products
+      .addCase(searchProducts.fulfilled, (state, action) => {
+        state.products = action.payload.data;
+        if (action.payload.pagination) {
+          state.pagination = action.payload.pagination;
+        }
+      })
+      // Create Product
+      .addCase(createProduct.fulfilled, (state, action) => {
+        state.products.unshift(action.payload);
+      })
+      // Update Product
+      .addCase(updateProduct.fulfilled, (state, action) => {
+        const index = state.products.findIndex(p => p._id === action.payload._id);
+        if (index !== -1) {
+          state.products[index] = action.payload;
+        }
+        if (state.currentProduct?._id === action.payload._id) {
+          state.currentProduct = action.payload;
+        }
+      })
+      // Delete Product
+      .addCase(deleteProduct.fulfilled, (state, action) => {
+        state.products = state.products.filter(p => p._id !== action.payload);
+      });
+  },
+});
+
+export const { clearError, clearCurrentProduct, setFilters, clearFilters } = productSlice.actions;
+export default productSlice.reducer;

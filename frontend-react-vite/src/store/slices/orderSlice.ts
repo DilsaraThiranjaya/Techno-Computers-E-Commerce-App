@@ -1,0 +1,149 @@
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { OrderState } from '../../types';
+import apiService from '../../services/api';
+import toast from 'react-hot-toast';
+
+const initialState: OrderState = {
+  orders: [],
+  currentOrder: null,
+  loading: false,
+  error: null,
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  },
+};
+
+// Async thunks
+export const createOrder = createAsyncThunk(
+  'orders/createOrder',
+  async (orderData: any, { rejectWithValue }) => {
+    try {
+      const response = await apiService.createOrder(orderData);
+      toast.success('Order placed successfully!');
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to create order');
+    }
+  }
+);
+
+export const fetchUserOrders = createAsyncThunk(
+  'orders/fetchUserOrders',
+  async (params: any = {}, { rejectWithValue }) => {
+    try {
+      const response = await apiService.getUserOrders(params);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
+    }
+  }
+);
+
+export const fetchOrderById = createAsyncThunk(
+  'orders/fetchOrderById',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await apiService.getOrderById(id);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch order');
+    }
+  }
+);
+
+export const fetchAllOrders = createAsyncThunk(
+  'orders/fetchAllOrders',
+  async (params: any = {}, { rejectWithValue }) => {
+    try {
+      const response = await apiService.getAllOrders(params);
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
+    }
+  }
+);
+
+export const updateOrderStatus = createAsyncThunk(
+  'orders/updateOrderStatus',
+  async ({ id, data }: { id: string; data: any }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.updateOrderStatus(id, data);
+      toast.success('Order status updated successfully!');
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update order status');
+    }
+  }
+);
+
+const orderSlice = createSlice({
+  name: 'orders',
+  initialState,
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+    clearCurrentOrder: (state) => {
+      state.currentOrder = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      // Create Order
+      .addCase(createOrder.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createOrder.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentOrder = action.payload;
+        state.orders.unshift(action.payload);
+      })
+      .addCase(createOrder.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch User Orders
+      .addCase(fetchUserOrders.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload.data;
+        if (action.payload.pagination) {
+          state.pagination = action.payload.pagination;
+        }
+      })
+      .addCase(fetchUserOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Order by ID
+      .addCase(fetchOrderById.fulfilled, (state, action) => {
+        state.currentOrder = action.payload;
+      })
+      // Fetch All Orders (Admin)
+      .addCase(fetchAllOrders.fulfilled, (state, action) => {
+        state.orders = action.payload.data;
+        if (action.payload.pagination) {
+          state.pagination = action.payload.pagination;
+        }
+      })
+      // Update Order Status
+      .addCase(updateOrderStatus.fulfilled, (state, action) => {
+        const index = state.orders.findIndex(o => o._id === action.payload._id);
+        if (index !== -1) {
+          state.orders[index] = action.payload;
+        }
+        if (state.currentOrder?._id === action.payload._id) {
+          state.currentOrder = action.payload;
+        }
+      });
+  },
+});
+
+export const { clearError, clearCurrentOrder } = orderSlice.actions;
+export default orderSlice.reducer;

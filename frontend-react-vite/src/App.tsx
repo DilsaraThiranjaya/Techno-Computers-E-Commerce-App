@@ -1,158 +1,139 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import type {AppDispatch, RootState} from './store/store';
-import { fetchUserProfile } from './slices/authSlice';
-import { isAuthenticated, getUserRole } from './auth/auth';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { Toaster } from 'react-hot-toast';
+import { store } from './store/store';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from './store/store';
+import { getProfile } from './store/slices/authSlice';
 
-// Layout Components
-import DefaultLayout from './view/common/DefaultLayout';
+// Layout
+import Layout from './components/common/Layout';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
-// Page Components
-import Home from './view/pages/Home';
-import About from './view/pages/About';
-import Contact from './view/pages/Contact';
-import Login from './view/pages/Login';
-import Register from './view/pages/Register';
-import Products from './view/pages/Products';
-import ProductDetail from './view/pages/ProductDetail';
-import Cart from './view/pages/Cart';
+// Pages
+import Home from './pages/Home';
+import Login from './pages/auth/Login';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import Products from './pages/Products';
+import ProductDetail from './pages/ProductDetail';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import Orders from './pages/Orders';
+import Profile from './pages/Profile';
+import Search from "./pages/Search.tsx";
+import Contact from './pages/Contact.tsx';
+import Register from "./pages/auth/Register.tsx";
 
-// Protected Route Component
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requiredRole?: string;
-}
-
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
-  const isAuth = isAuthenticated();
-  const userRole = getUserRole();
-
-  if (!isAuth) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (requiredRole && userRole !== requiredRole) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
-};
-
-// Public Route Component (redirect if already authenticated)
-interface PublicRouteProps {
-  children: React.ReactNode;
-}
-
-const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
-  const isAuth = isAuthenticated();
-  const userRole = getUserRole();
-
-  if (isAuth) {
-    if (userRole === 'admin') {
-      return <Navigate to="/admin" replace />;
-    }
-    return <Navigate to="/" replace />;
-  }
-
-  return <>{children}</>;
-};
-
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { isAuthenticated: isAuth } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    // Check if user is authenticated and fetch profile
-    if (isAuthenticated() && !isAuth) {
-      dispatch(fetchUserProfile());
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      dispatch(getProfile());
     }
-  }, [dispatch, isAuth]);
+  }, [dispatch]);
 
   return (
     <Router>
       <div className="App">
         <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          } />
-          
-          <Route path="/register" element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          } />
-          
-          {/* Routes with Default Layout */}
-          <Route path="/" element={<DefaultLayout />}>
+          <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
-            <Route path="about" element={<About />} />
+            <Route path="products" element={<Products />} />
+            <Route path="products/:id" element={<ProductDetail />} />
+            <Route path="search" element={<Search />} />
             <Route path="contact" element={<Contact />} />
             
-            {/* Public Product Routes */}
-            <Route path="products" element={<Products />} />
-            <Route path="product/:id" element={<ProductDetail />} />
-            
-            {/* Protected Routes */}
-            <Route path="cart" element={
-              <ProtectedRoute>
-                <Cart />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="profile" element={
-              <ProtectedRoute>
-                <div className="min-h-screen flex items-center justify-center">
-                  <div className="text-center">
-                    <h1 className="text-3xl font-bold text-secondary-900 mb-4">Profile</h1>
-                    <p className="text-secondary-600">Coming soon...</p>
-                  </div>
-                </div>
-              </ProtectedRoute>
-            } />
-            
-            <Route path="orders" element={
-              <ProtectedRoute>
-                <div className="min-h-screen flex items-center justify-center">
-                  <div className="text-center">
-                    <h1 className="text-3xl font-bold text-secondary-900 mb-4">My Orders</h1>
-                    <p className="text-secondary-600">Coming soon...</p>
-                  </div>
-                </div>
-              </ProtectedRoute>
-            } />
-            
-            {/* Admin Routes */}
-            <Route path="admin/*" element={
-              <ProtectedRoute requiredRole="admin">
-                <div className="min-h-screen flex items-center justify-center">
-                  <div className="text-center">
-                    <h1 className="text-3xl font-bold text-secondary-900 mb-4">Admin Panel</h1>
-                    <p className="text-secondary-600">Coming soon...</p>
-                  </div>
-                </div>
-              </ProtectedRoute>
-            } />
+            {/* Protected Customer Routes */}
+            <Route
+              path="cart"
+              element={
+                <ProtectedRoute>
+                  <Cart />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="checkout"
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <ProtectedRoute>
+                  <Orders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="orders/:id"
+              element={
+                <ProtectedRoute>
+                  <Orders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected Admin Routes */}
+            <Route
+              path="admin/*"
+              element={
+                <ProtectedRoute adminOnly>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
           </Route>
 
-          {/* Catch all route */}
-          <Route path="*" element={
-            <div className="min-h-screen flex items-center justify-center bg-secondary-50">
-              <div className="text-center">
-                <h1 className="text-6xl font-bold text-secondary-900 mb-4">404</h1>
-                <p className="text-xl text-secondary-600 mb-8">Page not found</p>
-                <a href="/" className="btn-primary">
-                  Go Home
-                </a>
-              </div>
-            </div>
-          } />
+          {/* Auth Routes (no layout) */}
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
         </Routes>
+
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              style: {
+                background: '#10B981',
+              },
+            },
+            error: {
+              style: {
+                background: '#EF4444',
+              },
+            },
+          }}
+        />
       </div>
     </Router>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Provider store={store}>
+      <AppContent />
+    </Provider>
   );
 };
 
