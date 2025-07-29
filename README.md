@@ -23,7 +23,6 @@ techno-computers/
 - **Secure Checkout**: Complete order placement with shipping details
 - **Order Tracking**: View order history and track status
 - **User Profile**: Account management and profile updates
-- **Responsive Design**: Mobile-first approach for all devices
 
 ### 👨‍💼 Admin Features
 - **Dashboard**: Comprehensive analytics and overview
@@ -31,7 +30,6 @@ techno-computers/
 - **Product Management**: Full CRUD operations for inventory
 - **Category Management**: Product categorization and organization
 - **Order Management**: Order processing and status updates
-- **Real-time Updates**: Live data synchronization
 
 ### 🔐 Security & Authentication
 - **JWT Authentication**: Secure token-based authentication
@@ -69,28 +67,27 @@ techno-computers/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/techno-computers.git
-   cd techno-computers
+   git clone https://github.com/DilsaraThiranjaya/Techno-Computers-E-Commerce-App.git
    ```
 
 2. **Setup Backend**
    ```bash
-   cd backend
+   cd backend-node
    npm install
-   cp .env.example .env
+   cp .env
    # Configure your environment variables
    npm run dev
    ```
 
 3. **Setup Frontend**
    ```bash
-   cd frontend
+   cd frontend-react-vite
    npm install
    npm run dev
    ```
 
 4. **Access the application**
-   - Frontend: http://localhost:5173
+   - Frontend: http://localhost:5174
    - Backend API: http://localhost:3000
 
 ## 📁 Project Structure
@@ -98,24 +95,27 @@ techno-computers/
 ### Frontend Structure
 ```
 src/
-├── components/        # Reusable UI components
-├── pages/            # Page components
-├── store/            # Redux store and slices
-├── services/         # API service layer
+├── assets/           # Static assets (images, fonts, etc.)
+├── components/       # Reusable UI components
 ├── hooks/            # Custom React hooks
-├── types/            # TypeScript type definitions
-└── utils/            # Utility functions
+├── pages/            # Page components
+├── services/         # API service layer
+├── store/            # Redux store and slices
+└── types/            # TypeScript type definitions
 ```
 
 ### Backend Structure
 ```
 src/
-├── controllers/      # Request handlers
-├── models/          # Database models
-├── routes/          # API routes
-├── middleware/      # Custom middleware
-├── utils/           # Utility functions
-└── config/          # Configuration files
+├── controllers/      # Request handlers  
+├── db/              # Database connections and setup  
+├── dto/             # Data Transfer Objects  
+├── middleware/      # Custom middleware  
+├── model/           # Database models  
+├── routes/          # API routes  
+├── services/        # Business logic layer  
+├── types/           # TypeScript type definitions  
+└── utils/           # Utility functions  
 ```
 
 ## 🔧 Configuration
@@ -129,99 +129,64 @@ PORT=3000
 MONGODB_URI=mongodb://localhost:27017/techno-computers
 JWT_SECRET=your-jwt-secret
 JWT_REFRESH_SECRET=your-refresh-secret
-JWT_EXPIRE=15m
-JWT_REFRESH_EXPIRE=7d
+EMAIL_USER=your@gmail.com
+EMAIL_PASS=your-app-password
 ```
 
-**Frontend (.env)**
-```env
-VITE_API_URL=http://localhost:3000/api
-```
-
-## 📚 API Documentation
+### 📚 API Documentation
 
 ### Authentication Endpoints
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/refresh` - Token refresh
-- `GET /api/auth/profile` - Get user profile
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `GET /auth/profile` - Get user profile
+- `PUT /auth/profile` - Update user profile
+- `POST /auth/change-password` - Change password
+- `POST /auth/refresh-token` - Refresh access token
+- `POST /auth/logout` - Logout user
 
 ### Product Endpoints
-- `GET /api/products` - Get all products
-- `GET /api/products/:id` - Get product by ID
-- `POST /api/products` - Create product (Admin)
-- `PUT /api/products/:id` - Update product (Admin)
-- `DELETE /api/products/:id` - Delete product (Admin)
+- `GET /products` - Get all products (with pagination)
+- `GET /products/featured` - Get featured products
+- `GET /products/:id` - Get product by ID
+- `GET /products/search` - Search products
+- `GET /products/:categoryName` - Get products by category
+- `POST /products` - Create product (Admin only)
+- `PUT /products/:id` - Update product (Admin only)
+- `DELETE /products/:id` - Delete product (Admin only)
+- `GET /products/admin/stats` - Get product statistics (Admin only)
+
+### Category Endpoints
+- `GET /categories` - Get all categories
+- `POST /categories` - Create category (Admin only)
+- `PUT /categories/:id` - Update category (Admin only)
+- `DELETE /categories/:id` - Delete category (Admin only)
+- `GET /categories/stats` - Get category statistics (Admin only)
+
+### Cart Endpoints
+- `GET /cart` - Get user cart
+- `POST /cart/add` - Add item to cart
+- `PUT /cart/item/:productId` - Update cart item
+- `DELETE /cart/item/:productId` - Remove item from cart
+- `DELETE /cart/clear` - Clear cart
 
 ### Order Endpoints
-- `GET /api/orders` - Get user orders
-- `POST /api/orders` - Create new order
-- `GET /api/orders/:id` - Get order by ID
-- `PUT /api/orders/:id/status` - Update order status (Admin)
+- `POST /orders` - Create new order
+- `GET /orders/my-orders` - Get user orders
+- `GET /orders/:id` - Get order by ID
+- `GET /orders` - Get all orders (Admin only)
+- `PUT /orders/:id/status` - Update order status (Admin only)
+- `GET /orders/admin/stats` - Get order statistics (Admin only)
 
-## 🧪 Testing
+### User Management (Admin)
+- `GET /users` - Get all users
+- `GET /users/:id` - Get user by ID
+- `PUT /users/:id/status` - Update user status
+- `GET /users/stats` - Get user statistics
+- `GET /users?search=query` - Search users
 
-### Frontend Testing
-```bash
-cd frontend
-npm run test
-```
+### Contact Endpoints
+- `POST /contact` - Send contact message
+- `GET /contact/info` - Get contact information
 
-### Backend Testing
-```bash
-cd backend
-npm run test
-```
-
-## 🚀 Deployment
-
-### Frontend Deployment (Netlify/Vercel)
-```bash
-cd frontend
-npm run build
-# Deploy the dist/ folder
-```
-
-### Backend Deployment (Heroku/Railway)
-```bash
-cd backend
-# Configure production environment variables
-# Deploy using your preferred platform
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Team
-
-- **Frontend Developer**: React/TypeScript specialist
-- **Backend Developer**: Node.js/MongoDB expert
-- **UI/UX Designer**: Modern e-commerce design
-- **DevOps Engineer**: Deployment and infrastructure
-
-## 📞 Support
-
-For support and questions:
-- Email: support@technocomputers.com
-- Documentation: [Project Wiki](https://github.com/yourusername/techno-computers/wiki)
-- Issues: [GitHub Issues](https://github.com/yourusername/techno-computers/issues)
-
-## 🔄 Version History
-
-- **v1.0.0** - Initial release with core e-commerce features
-- **v1.1.0** - Added admin dashboard and analytics
-- **v1.2.0** - Enhanced search and filtering capabilities
-- **v2.0.0** - Complete UI/UX redesign with mobile optimization
-
----
-
-**Built with ❤️ for the tech community**
+## 🤝 Contributor
+** Dilsara Thiranjaya **
