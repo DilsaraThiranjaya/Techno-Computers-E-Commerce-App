@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { Menu, X, ShoppingCart, User, Search, LogOut, Package, Settings } from 'lucide-react';
+import {Menu, X, ShoppingCart, User, Search, LogOut, Package, Settings, Phone, Home} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { logoutUser } from '../../store/slices/authSlice';
 import { fetchCart } from '../../store/slices/cartSlice';
@@ -68,29 +68,36 @@ const Header: React.FC = () => {
 
           {/* Navigation - Desktop */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link
-              to="/products"
-              className={`text-gray-700 hover:text-blue-600 transition-colors ${
-                location.pathname === '/products' ? 'text-blue-600 font-medium' : ''
-              }`}
-            >
-              Products
-            </Link>
-            
             {isAuthenticated ? (
               <>
                 {isAdmin ? (
-                  <Link
-                    to="/admin"
-                    className={`text-gray-700 hover:text-blue-600 transition-colors flex items-center space-x-1 ${
-                      location.pathname.startsWith('/admin') ? 'text-blue-600 font-medium' : ''
-                    }`}
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>Admin</span>
-                  </Link>
+                        <><Link to="/" className="text-gray-700 hover:text-blue-600 transition-colors flex items-center space-x-1" onClick={() => setIsMenuOpen(false)}>
+                          <Home className="w-4 h-4" />
+                          <span>Home</span>
+                        </Link>
+                          <Link
+                              to="/admin"
+                              className={`text-gray-700 hover:text-blue-600 transition-colors flex items-center space-x-1 ${
+                                  location.pathname.startsWith('/admin') ? 'text-blue-600 font-medium' : ''
+                              }`}
+                          >
+                            <Settings className="w-4 h-4" />
+                            <span>Admin</span>
+                          </Link>
+                        </>
                 ) : (
                   <>
+                    <Link to="/" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setIsMenuOpen(false)}>
+                      Home
+                    </Link>
+                    <Link
+                        to="/products"
+                        className={`text-gray-700 hover:text-blue-600 transition-colors ${
+                            location.pathname === '/products' ? 'text-blue-600 font-medium' : ''
+                        }`}
+                    >
+                      Products
+                    </Link>
                     <Link
                       to="/cart"
                       className={`relative text-gray-700 hover:text-blue-600 transition-colors ${
@@ -129,6 +136,15 @@ const Header: React.FC = () => {
                         <User className="w-4 h-4 mr-2" />
                         Profile
                       </Link>
+                      <Link
+                          to="/contact"
+                          className={`flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
+                              location.pathname === '/contact' ? 'text-blue-600 font-medium' : ''
+                          }`}
+                      >
+                        <Phone className="w-4 h-4 mr-2" />
+                        Contact
+                      </Link>
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -142,6 +158,9 @@ const Header: React.FC = () => {
               </>
             ) : (
               <>
+                <Link to="/" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setIsMenuOpen(false)}>
+                  Home
+                </Link>
                 <Link
                   to="/login"
                   className="text-gray-700 hover:text-blue-600 transition-colors"
@@ -153,6 +172,14 @@ const Header: React.FC = () => {
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Register
+                </Link>
+                <Link
+                    to="/contact"
+                    className={`text-gray-700 hover:text-blue-600 transition-colors ${
+                        location.pathname === '/contact' ? 'text-blue-600 font-medium' : ''
+                    }`}
+                >
+                  Contact
                 </Link>
               </>
             )}
@@ -185,26 +212,26 @@ const Header: React.FC = () => {
             </form>
 
             <nav className="space-y-2">
-              <Link
-                to="/products"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Products
-              </Link>
-              
               {isAuthenticated ? (
                 <>
                   {isAdmin ? (
-                    <Link
-                      to="/admin"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Admin Dashboard
-                    </Link>
+                    <>
+                      <Link to="/" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setIsMenuOpen(false)}>
+                        Home
+                      </Link>
+                      <Link
+                          to="/admin"
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                          onClick={() => setIsMenuOpen(false)}
+                      >
+                        Admin Dashboard
+                      </Link>
+                    </>
                   ) : (
                     <>
+                      <Link to="/" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setIsMenuOpen(false)}>
+                        Home
+                      </Link>
                       <Link
                         to="/cart"
                         className="flex items-center justify-between px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
@@ -234,6 +261,15 @@ const Header: React.FC = () => {
                   >
                     Profile
                   </Link>
+                  <Link
+                      to="/contact"
+                      className={`flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
+                          location.pathname === '/contact' ? 'text-blue-600 font-medium' : ''
+                      }`}
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    Contact
+                  </Link>
                   <button
                     onClick={() => {
                       handleLogout();
@@ -246,6 +282,9 @@ const Header: React.FC = () => {
                 </>
               ) : (
                 <>
+                  <Link to="/" className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg" onClick={() => setIsMenuOpen(false)}>
+                    Home
+                  </Link>
                   <Link
                     to="/login"
                     className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
@@ -259,6 +298,14 @@ const Header: React.FC = () => {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Register
+                  </Link>
+                  <Link
+                      to="/contact"
+                      className={`text-gray-700 hover:text-blue-600 transition-colors ${
+                          location.pathname === '/contact' ? 'text-blue-600 font-medium' : ''
+                      }`}
+                  >
+                    Contact
                   </Link>
                 </>
               )}

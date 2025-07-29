@@ -41,6 +41,10 @@ const Home: React.FC = () => {
     },
   ];
 
+  // Ensure arrays are safe
+  const safeFeaturedProducts = Array.isArray(featuredProducts) ? featuredProducts : [];
+  const safeCategories = Array.isArray(categories) ? categories : [];
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -122,7 +126,7 @@ const Home: React.FC = () => {
             <p className="text-gray-600">Explore our wide range of technology categories</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {categories.slice(0, 5).map((category) => (
+            {safeCategories.slice(0, 5).map((category) => (
               <Link
                 key={category._id}
                 to={`/products?category=${encodeURIComponent(category.name)}`}
@@ -163,7 +167,7 @@ const Home: React.FC = () => {
             <LoadingSpinner size="lg" className="py-12" />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {featuredProducts.slice(0, 8).map((product) => (
+              {safeFeaturedProducts.slice(0, 8).map((product) => (
                 <ProductCard key={product._id} product={product} />
               ))}
             </div>

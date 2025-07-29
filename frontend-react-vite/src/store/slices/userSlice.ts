@@ -69,7 +69,8 @@ const userSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-        state.users = action.payload.data;
+        // Ensure users is always an array
+        state.users = Array.isArray(action.payload.data) ? action.payload.data : [];
         if (action.payload.pagination) {
           state.pagination = action.payload.pagination;
         }
@@ -77,6 +78,7 @@ const userSlice = createSlice({
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.users = []; // Reset to empty array on error
       })
       // Update User Status
       .addCase(updateUserStatus.fulfilled, (state, action) => {

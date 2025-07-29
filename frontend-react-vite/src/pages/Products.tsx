@@ -83,6 +83,10 @@ const Products: React.FC = () => {
     setSearchParams(params);
   };
 
+  // Ensure products is always an array
+  const safeProducts = Array.isArray(products) ? products : [];
+  const safeCategories = Array.isArray(categories) ? categories : [];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -161,7 +165,7 @@ const Products: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">All Categories</option>
-                    {categories.map((category) => (
+                    {safeCategories.map((category) => (
                       <option key={category._id} value={category.name}>
                         {category.name}
                       </option>
@@ -261,7 +265,7 @@ const Products: React.FC = () => {
           <div className="flex-1">
             {loading ? (
               <LoadingSpinner size="lg" className="py-12" />
-            ) : products.length === 0 ? (
+            ) : safeProducts.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-400 mb-4">
                   <Filter className="w-16 h-16 mx-auto" />
@@ -282,7 +286,7 @@ const Products: React.FC = () => {
                     ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
                     : 'grid-cols-1'
                 }`}>
-                  {products.map((product) => (
+                  {safeProducts.map((product) => (
                     <ProductCard key={product._id} product={product} />
                   ))}
                 </div>

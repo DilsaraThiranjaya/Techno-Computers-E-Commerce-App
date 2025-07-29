@@ -157,6 +157,10 @@ const ProductManagement: React.FC = () => {
     return 'In Stock';
   };
 
+  // Ensure arrays are safe
+  const safeProducts = Array.isArray(products) ? products : [];
+  const safeCategories = Array.isArray(categories) ? categories : [];
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -196,7 +200,7 @@ const ProductManagement: React.FC = () => {
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="all">All Categories</option>
-            {categories.map((category) => (
+            {safeCategories.map((category) => (
               <option key={category._id} value={category.name}>
                 {category.name}
               </option>
@@ -211,7 +215,7 @@ const ProductManagement: React.FC = () => {
           <div className="flex items-center justify-center h-64">
             <LoadingSpinner size="lg" />
           </div>
-        ) : products.length === 0 ? (
+        ) : safeProducts.length === 0 ? (
           <div className="text-center py-12">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">No products found</p>
@@ -243,7 +247,7 @@ const ProductManagement: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {products.map((product) => (
+                  {safeProducts.map((product) => (
                     <tr key={product._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -439,7 +443,7 @@ const ProductManagement: React.FC = () => {
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                           <option value="">Select Category</option>
-                          {categories.map((category) => (
+                          {safeCategories.map((category) => (
                             <option key={category._id} value={category.name}>
                               {category.name}
                             </option>

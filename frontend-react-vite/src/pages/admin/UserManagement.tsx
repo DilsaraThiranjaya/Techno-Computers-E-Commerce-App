@@ -61,6 +61,9 @@ const UserManagement: React.FC = () => {
       : 'bg-blue-100 text-blue-800';
   };
 
+  // Ensure users is always an array
+  const safeUsers = Array.isArray(users) ? users : [];
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -117,7 +120,7 @@ const UserManagement: React.FC = () => {
           <div className="flex items-center justify-center h-64">
             <LoadingSpinner size="lg" />
           </div>
-        ) : users.length === 0 ? (
+        ) : safeUsers.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500">No users found</p>
           </div>
@@ -148,7 +151,7 @@ const UserManagement: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
+                  {safeUsers.map((user) => (
                     <tr key={user._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">

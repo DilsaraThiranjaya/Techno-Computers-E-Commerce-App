@@ -118,6 +118,9 @@ const OrderManagement: React.FC = () => {
     { value: 'cancelled', label: 'Cancelled' },
   ];
 
+  // Ensure orders is always an array
+  const safeOrders = Array.isArray(orders) ? orders : [];
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -178,7 +181,7 @@ const OrderManagement: React.FC = () => {
           <div className="flex items-center justify-center h-64">
             <LoadingSpinner size="lg" />
           </div>
-        ) : orders.length === 0 ? (
+        ) : safeOrders.length === 0 ? (
           <div className="text-center py-12">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500">No orders found</p>
@@ -213,7 +216,7 @@ const OrderManagement: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {orders.map((order) => (
+                  {safeOrders.map((order) => (
                     <tr key={order._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">

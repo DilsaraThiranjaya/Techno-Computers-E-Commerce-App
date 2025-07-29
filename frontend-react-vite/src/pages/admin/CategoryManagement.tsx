@@ -61,7 +61,10 @@ const CategoryManagement: React.FC = () => {
     dispatch(fetchCategories(params));
   }, [dispatch, statusFilter]);
 
-  const filteredCategories = categories.filter(category =>
+  // Ensure categories is always an array
+  const safeCategories = Array.isArray(categories) ? categories : [];
+
+  const filteredCategories = safeCategories.filter(category =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );

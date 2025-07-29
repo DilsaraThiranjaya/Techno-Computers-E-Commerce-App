@@ -113,7 +113,8 @@ const orderSlice = createSlice({
       })
       .addCase(fetchUserOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = action.payload.data;
+        // Ensure orders is always an array
+        state.orders = Array.isArray(action.payload.data) ? action.payload.data : [];
         if (action.payload.pagination) {
           state.pagination = action.payload.pagination;
         }
@@ -121,6 +122,7 @@ const orderSlice = createSlice({
       .addCase(fetchUserOrders.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.orders = []; // Reset to empty array on error
       })
       // Fetch Order by ID
       .addCase(fetchOrderById.fulfilled, (state, action) => {
@@ -128,10 +130,14 @@ const orderSlice = createSlice({
       })
       // Fetch All Orders (Admin)
       .addCase(fetchAllOrders.fulfilled, (state, action) => {
-        state.orders = action.payload.data;
+        // Ensure orders is always an array
+        state.orders = Array.isArray(action.payload.data) ? action.payload.data : [];
         if (action.payload.pagination) {
           state.pagination = action.payload.pagination;
         }
+      })
+      .addCase(fetchAllOrders.rejected, (state) => {
+        state.orders = []; // Reset to empty array on error
       })
       // Update Order Status
       .addCase(updateOrderStatus.fulfilled, (state, action) => {

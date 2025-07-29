@@ -153,10 +153,6 @@ class ApiService {
     return this.delete(`/products/${id}`);
   }
 
-  async getProductStats() {
-    return this.get('/products/admin/stats');
-  }
-
   // Categories
   async getCategories(params?: any) {
     const queryString = params ? new URLSearchParams(params).toString() : '';
@@ -173,10 +169,6 @@ class ApiService {
 
   async deleteCategory(id: string) {
     return this.delete(`/categories/${id}`);
-  }
-
-  async getCategoryStats() {
-    return this.get('/categories/stats');
   }
 
   // Cart
@@ -223,10 +215,6 @@ class ApiService {
     return this.put(`/orders/${id}/status`, data);
   }
 
-  async getOrderStats() {
-    return this.get('/orders/admin/stats');
-  }
-
   // Users (Admin)
   async getUsers(params?: any) {
     const queryString = params ? new URLSearchParams(params).toString() : '';
@@ -241,17 +229,9 @@ class ApiService {
     return this.put(`/users/${id}/status`, data);
   }
 
-  async getUserStats() {
-    return this.get('/users/stats');
-  }
-
   // Contact
   async sendContactMessage(data: any) {
     return this.post('/contact', data);
-  }
-
-  async getContactInfo() {
-    return this.get('/contact/info');
   }
 }
 

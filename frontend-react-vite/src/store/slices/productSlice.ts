@@ -134,7 +134,8 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload.data;
+        // Ensure products is always an array
+        state.products = Array.isArray(action.payload.data) ? action.payload.data : [];
         if (action.payload.pagination) {
           state.pagination = action.payload.pagination;
         }
@@ -142,10 +143,15 @@ const productSlice = createSlice({
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.products = []; // Reset to empty array on error
       })
       // Fetch Featured Products
       .addCase(fetchFeaturedProducts.fulfilled, (state, action) => {
-        state.featuredProducts = action.payload;
+        // Ensure featuredProducts is always an array
+        state.featuredProducts = Array.isArray(action.payload) ? action.payload : [];
+      })
+      .addCase(fetchFeaturedProducts.rejected, (state) => {
+        state.featuredProducts = []; // Reset to empty array on error
       })
       // Fetch Product by ID
       .addCase(fetchProductById.pending, (state) => {
@@ -162,10 +168,14 @@ const productSlice = createSlice({
       })
       // Search Products
       .addCase(searchProducts.fulfilled, (state, action) => {
-        state.products = action.payload.data;
+        // Ensure products is always an array
+        state.products = Array.isArray(action.payload.data) ? action.payload.data : [];
         if (action.payload.pagination) {
           state.pagination = action.payload.pagination;
         }
+      })
+      .addCase(searchProducts.rejected, (state) => {
+        state.products = []; // Reset to empty array on error
       })
       // Create Product
       .addCase(createProduct.fulfilled, (state, action) => {
