@@ -25,7 +25,7 @@ const Products: React.FC = () => {
     sortOrder: searchParams.get('sortOrder') || 'desc',
   });
 
-  const { products, loading, pagination, filters } = useSelector((state: RootState) => state.products);
+  const { products, loading, pagination} = useSelector((state: RootState) => state.products);
   const { categories } = useSelector((state: RootState) => state.categories);
 
   const brands = ['Apple', 'Dell', 'HP', 'Lenovo', 'ASUS', 'Acer', 'MSI', 'Samsung', 'LG', 'Sony'];
@@ -39,7 +39,7 @@ const Products: React.FC = () => {
       page: searchParams.get('page') || '1',
       limit: '12',
       ...Object.fromEntries(
-        Object.entries(localFilters).filter(([_, value]) => value !== '' && value !== false)
+        Object.entries(localFilters).filter(([value]) => value !== '' && value !== undefined)
       ),
     };
 

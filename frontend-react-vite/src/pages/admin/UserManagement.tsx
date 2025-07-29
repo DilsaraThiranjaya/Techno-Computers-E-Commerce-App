@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Search, Filter, MoreVertical, UserCheck, UserX, Eye } from 'lucide-react';
+import { Search, MoreVertical, UserCheck, UserX, Eye } from 'lucide-react';
 import { RootState, AppDispatch } from '../../store/store';
 import { fetchUsers, updateUserStatus } from '../../store/slices/userSlice';
 import LoadingSpinner from '../../components/common/LoadingSpinner';

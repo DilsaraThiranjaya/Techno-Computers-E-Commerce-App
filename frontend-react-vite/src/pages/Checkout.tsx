@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { CreditCard, Truck, MapPin, User, Phone, Mail } from 'lucide-react';
+import { CreditCard, Truck, MapPin, User, Phone } from 'lucide-react';
 import { RootState, AppDispatch } from '../store/store';
 import { fetchCart } from '../store/slices/cartSlice';
 import { createOrder } from '../store/slices/orderSlice';

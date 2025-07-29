@@ -34,7 +34,7 @@ const Register: React.FC = () => {
   }, [isAuthenticated, navigate, dispatch]);
 
   const onSubmit = (data: RegisterForm & { confirmPassword: string }) => {
-    const { confirmPassword, ...userData } = data;
+    const {...userData } = data;
     dispatch(registerUser(userData));
   };
 

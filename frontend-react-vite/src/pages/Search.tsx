@@ -41,7 +41,7 @@ const Search: React.FC = () => {
         page: searchParams.get('page') || '1',
         limit: '12',
         ...Object.fromEntries(
-          Object.entries(localFilters).filter(([_, value]) => value !== '')
+          Object.entries(localFilters).filter(([value]) => value !== '')
         ),
       };
       dispatch(searchProducts(params));

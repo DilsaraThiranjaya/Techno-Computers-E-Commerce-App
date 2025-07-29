@@ -5,7 +5,6 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { RootState, AppDispatch } from '../store/store';
 import { fetchCart, updateCartItem, removeFromCart, clearCart } from '../store/slices/cartSlice';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import toast from 'react-hot-toast';
 
 const Cart: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useForm } from 'react-hook-form';
+import {Resolver, useForm} from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { 
@@ -57,7 +57,7 @@ const ProductManagement: React.FC = () => {
     reset,
     setValue,
   } = useForm<ProductForm>({
-    resolver: yupResolver(productSchema),
+    resolver: yupResolver(productSchema) as unknown as Resolver<ProductForm>,
   });
 
   useEffect(() => {
@@ -119,7 +119,7 @@ const ProductManagement: React.FC = () => {
       try {
         await dispatch(deleteProduct(productId));
         setShowDropdown(null);
-      } catch (error) {
+      } catch {
         toast.error('Failed to delete product');
       }
     }
@@ -140,7 +140,7 @@ const ProductManagement: React.FC = () => {
       
       setShowModal(false);
       reset();
-    } catch (error) {
+    } catch {
       toast.error('Failed to save product');
     }
   };

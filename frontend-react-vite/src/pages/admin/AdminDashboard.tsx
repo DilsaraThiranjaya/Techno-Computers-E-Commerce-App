@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -7,7 +7,6 @@ import {
   ShoppingBag, 
   FolderOpen,
   BarChart3,
-  Settings,
   Menu,
   X
 } from 'lucide-react';

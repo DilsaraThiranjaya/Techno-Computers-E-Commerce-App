@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useForm } from 'react-hook-form';
+import {Resolver, useForm} from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { 
@@ -50,7 +50,7 @@ const CategoryManagement: React.FC = () => {
     reset,
     setValue,
   } = useForm<CategoryForm>({
-    resolver: yupResolver(categorySchema),
+    resolver: yupResolver(categorySchema) as Resolver<CategoryForm>,
   });
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const CategoryManagement: React.FC = () => {
       try {
         await dispatch(deleteCategory(categoryId));
         setShowDropdown(null);
-      } catch (error) {
+      } catch {
         toast.error('Failed to delete category');
       }
     }
@@ -103,7 +103,7 @@ const CategoryManagement: React.FC = () => {
       
       setShowModal(false);
       reset();
-    } catch (error) {
+    } catch {
       toast.error('Failed to save category');
     }
   };

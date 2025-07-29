@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useForm } from 'react-hook-form';
+import {Resolver, useForm} from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { User, Mail, Phone, MapPin, Lock, Save, Edit } from 'lucide-react';
@@ -39,7 +39,7 @@ const Profile: React.FC = () => {
     formState: { errors: profileErrors },
     reset: resetProfile,
   } = useForm<Partial<UserType>>({
-    resolver: yupResolver(profileSchema),
+    resolver: yupResolver(profileSchema) as Resolver<Partial<UserType>>,
     defaultValues: {
       firstName: user?.firstName || '',
       lastName: user?.lastName || '',
@@ -74,7 +74,7 @@ const Profile: React.FC = () => {
     try {
       await dispatch(updateProfile(data));
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       toast.error('Failed to update profile');
     }
   };
@@ -83,7 +83,7 @@ const Profile: React.FC = () => {
     try {
       await dispatch(changePassword(data));
       resetPassword();
-    } catch (error) {
+    } catch {
       toast.error('Failed to change password');
     }
   };

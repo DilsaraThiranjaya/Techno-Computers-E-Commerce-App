@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { User } from '../../types';
+import { UsersResponse } from '../../types/api';
 import apiService from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -30,7 +31,7 @@ export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
   async (params: any = {}, { rejectWithValue }) => {
     try {
-      const response = await apiService.getUsers(params);
+      const response: UsersResponse = await apiService.getUsers(params) as UsersResponse;
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');
@@ -42,7 +43,7 @@ export const updateUserStatus = createAsyncThunk(
   'users/updateUserStatus',
   async ({ id, status }: { id: string; status: string }, { rejectWithValue }) => {
     try {
-      const response = await apiService.updateUserStatus(id, { status });
+      await apiService.updateUserStatus(id, { status });
       toast.success('User status updated successfully!');
       return { id, status };
     } catch (error: any) {

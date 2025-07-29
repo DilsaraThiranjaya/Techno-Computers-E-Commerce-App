@@ -5,6 +5,7 @@ import cartSlice from './slices/cartSlice';
 import orderSlice from './slices/orderSlice';
 import categorySlice from './slices/categorySlice';
 import userSlice from './slices/userSlice';
+import contactSlice from "./slices/contactSlice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     orders: orderSlice,
     categories: categorySlice,
     users: userSlice,
+    contacts: contactSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

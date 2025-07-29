@@ -6,6 +6,9 @@ import { Mail, Phone, MapPin, Clock, Send, MessageCircle } from 'lucide-react';
 import { ContactForm } from '../types';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
+import {useDispatch} from "react-redux";
+import {AppDispatch} from "../store/store.ts";
+import {sendContactMessage} from "../store/slices/contactSlice.ts";
 
 const contactSchema = yup.object({
   name: yup.string().required('Name is required').min(2, 'Name must be at least 2 characters'),
@@ -16,6 +19,7 @@ const contactSchema = yup.object({
 
 const Contact: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const dispatch = useDispatch<AppDispatch>();
 
   const {
     register,
@@ -29,11 +33,10 @@ const Contact: React.FC = () => {
   const onSubmit = async (data: ContactForm) => {
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
+      await dispatch(sendContactMessage(data));
       reset();
-    } catch (error) {
+      toast.success('Message sent successfully!');
+    } catch {
       toast.error('Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);

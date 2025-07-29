@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { CartState } from '../../types';
+import { CartResponse } from '../../types/api';
 import apiService from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -14,7 +15,7 @@ export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiService.getCart();
+      const response: CartResponse = await apiService.getCart() as CartResponse;
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch cart');
@@ -26,7 +27,7 @@ export const addToCart = createAsyncThunk(
   'cart/addToCart',
   async (data: { productId: string; quantity: number }, { rejectWithValue }) => {
     try {
-      const response = await apiService.addToCart(data);
+      const response: CartResponse = await apiService.addToCart(data) as CartResponse;
       toast.success('Product added to cart!');
       return response.data;
     } catch (error: any) {
@@ -39,7 +40,7 @@ export const updateCartItem = createAsyncThunk(
   'cart/updateCartItem',
   async ({ productId, quantity }: { productId: string; quantity: number }, { rejectWithValue }) => {
     try {
-      const response = await apiService.updateCartItem(productId, { quantity });
+      const response: CartResponse = await apiService.updateCartItem(productId, { quantity }) as CartResponse;
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update cart item');

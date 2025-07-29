@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { OrderState } from '../../types';
+import { ApiResponse, OrdersResponse } from '../../types/api';
 import apiService from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -20,7 +21,7 @@ export const createOrder = createAsyncThunk(
   'orders/createOrder',
   async (orderData: any, { rejectWithValue }) => {
     try {
-      const response = await apiService.createOrder(orderData);
+      const response: ApiResponse<import('../../types').Order> = await apiService.createOrder(orderData) as ApiResponse<import('../../types').Order>;
       toast.success('Order placed successfully!');
       return response.data;
     } catch (error: any) {
@@ -33,7 +34,7 @@ export const fetchUserOrders = createAsyncThunk(
   'orders/fetchUserOrders',
   async (params: any = {}, { rejectWithValue }) => {
     try {
-      const response = await apiService.getUserOrders(params);
+      const response: OrdersResponse = await apiService.getUserOrders(params) as OrdersResponse;
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
@@ -45,7 +46,7 @@ export const fetchOrderById = createAsyncThunk(
   'orders/fetchOrderById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await apiService.getOrderById(id);
+      const response: ApiResponse<import('../../types').Order> = await apiService.getOrderById(id) as ApiResponse<import('../../types').Order>;
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch order');
@@ -57,7 +58,7 @@ export const fetchAllOrders = createAsyncThunk(
   'orders/fetchAllOrders',
   async (params: any = {}, { rejectWithValue }) => {
     try {
-      const response = await apiService.getAllOrders(params);
+      const response: OrdersResponse = await apiService.getAllOrders(params) as OrdersResponse;
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
@@ -69,7 +70,7 @@ export const updateOrderStatus = createAsyncThunk(
   'orders/updateOrderStatus',
   async ({ id, data }: { id: string; data: any }, { rejectWithValue }) => {
     try {
-      const response = await apiService.updateOrderStatus(id, data);
+      const response: ApiResponse<import('../../types').Order> = await apiService.updateOrderStatus(id, data) as ApiResponse<import('../../types').Order>;
       toast.success('Order status updated successfully!');
       return response.data;
     } catch (error: any) {

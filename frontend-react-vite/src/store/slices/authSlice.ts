@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { AuthState, User, LoginForm, RegisterForm } from '../../types';
+import { ApiResponse, LoginResponse, RegisterResponse } from '../../types/api';
 import apiService from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -17,7 +18,7 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: LoginForm, { rejectWithValue }) => {
     try {
-      const response = await apiService.login(credentials);
+      const response: ApiResponse<LoginResponse> = await apiService.login(credentials);
       const { user, accessToken, refreshToken } = response.data;
       
       localStorage.setItem('accessToken', accessToken);
@@ -35,7 +36,7 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData: RegisterForm, { rejectWithValue }) => {
     try {
-      const response = await apiService.register(userData);
+      const response: ApiResponse<RegisterResponse> = await apiService.register(userData) as ApiResponse<RegisterResponse>;
       const { user, accessToken, refreshToken } = response.data;
       
       localStorage.setItem('accessToken', accessToken);
@@ -69,7 +70,7 @@ export const getProfile = createAsyncThunk(
   'auth/profile',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiService.getProfile();
+      const response: ApiResponse<User> = await apiService.getProfile() as ApiResponse<User>;
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
@@ -81,7 +82,7 @@ export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async (userData: Partial<User>, { rejectWithValue }) => {
     try {
-      const response = await apiService.updateProfile(userData);
+      const response: ApiResponse<User> = await apiService.updateProfile(userData) as ApiResponse<User>;
       toast.success('Profile updated successfully!');
       return response.data;
     } catch (error: any) {

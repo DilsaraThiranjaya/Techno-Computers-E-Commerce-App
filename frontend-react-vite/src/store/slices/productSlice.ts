@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ProductState, Product } from '../../types';
+import { ProductsResponse, FeaturedProductsResponse, ApiResponse } from '../../types/api';
 import apiService from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -24,7 +25,7 @@ export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async (params: any = {}, { rejectWithValue }) => {
     try {
-      const response = await apiService.getProducts(params);
+      const response: ProductsResponse = await apiService.getProducts(params) as ProductsResponse;
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch products');
@@ -36,7 +37,7 @@ export const fetchFeaturedProducts = createAsyncThunk(
   'products/fetchFeaturedProducts',
   async (limit: number = 8, { rejectWithValue }) => {
     try {
-      const response = await apiService.getFeaturedProducts(limit);
+      const response: FeaturedProductsResponse = await apiService.getFeaturedProducts(limit) as FeaturedProductsResponse;
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch featured products');
@@ -48,7 +49,7 @@ export const fetchProductById = createAsyncThunk(
   'products/fetchProductById',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await apiService.getProductById(id);
+      const response: ApiResponse<Product> = await apiService.getProductById(id) as ApiResponse<Product>;
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch product');
@@ -60,7 +61,7 @@ export const searchProducts = createAsyncThunk(
   'products/searchProducts',
   async (params: any, { rejectWithValue }) => {
     try {
-      const response = await apiService.searchProducts(params);
+      const response: ProductsResponse = await apiService.searchProducts(params) as ProductsResponse;
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to search products');
@@ -72,7 +73,7 @@ export const createProduct = createAsyncThunk(
   'products/createProduct',
   async (productData: any, { rejectWithValue }) => {
     try {
-      const response = await apiService.createProduct(productData);
+      const response: ApiResponse<Product> = await apiService.createProduct(productData) as ApiResponse<Product>;
       toast.success('Product created successfully!');
       return response.data;
     } catch (error: any) {
@@ -85,7 +86,7 @@ export const updateProduct = createAsyncThunk(
   'products/updateProduct',
   async ({ id, data }: { id: string; data: any }, { rejectWithValue }) => {
     try {
-      const response = await apiService.updateProduct(id, data);
+      const response: ApiResponse<Product> = await apiService.updateProduct(id, data) as ApiResponse<Product>;
       toast.success('Product updated successfully!');
       return response.data;
     } catch (error: any) {

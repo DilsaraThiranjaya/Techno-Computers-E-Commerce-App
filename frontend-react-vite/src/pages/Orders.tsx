@@ -4,7 +4,6 @@ import { Link, useParams } from 'react-router-dom';
 import { Package, Eye, Calendar, CreditCard, Truck, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { RootState, AppDispatch } from '../store/store';
 import { fetchUserOrders, fetchOrderById } from '../store/slices/orderSlice';
-import { useAuth } from '../hooks/useAuth';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import Pagination from '../components/common/Pagination';
 
@@ -12,8 +11,6 @@ const Orders: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useDispatch<AppDispatch>();
   const [currentPage, setCurrentPage] = useState(1);
-  const { isAdmin } = useAuth();
-
   const { orders, currentOrder, loading, pagination } = useSelector((state: RootState) => state.orders);
 
   useEffect(() => {

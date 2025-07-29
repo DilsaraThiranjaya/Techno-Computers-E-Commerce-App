@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import toast from 'react-hot-toast';
+import { ApiResponse, LoginResponse } from '../types/api';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -97,8 +98,8 @@ class ApiService {
   }
 
   // Authentication
-  async login(credentials: { email: string; password: string }) {
-    return this.post('/auth/login', credentials);
+  async login(credentials: { email: string; password: string }): Promise<ApiResponse<LoginResponse>> {
+    return this.post<ApiResponse<LoginResponse>>('/auth/login', credentials);
   }
 
   async register(userData: any) {

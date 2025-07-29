@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   Search, 
-  Filter, 
-  Eye, 
+  Eye,
   MoreVertical,
   Package,
   Clock,
@@ -56,7 +55,7 @@ const OrderManagement: React.FC = () => {
       await dispatch(updateOrderStatus({ id: orderId, data: { orderStatus: newStatus } }));
       setShowDropdown(null);
       toast.success('Order status updated successfully');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update order status');
     }
   };
