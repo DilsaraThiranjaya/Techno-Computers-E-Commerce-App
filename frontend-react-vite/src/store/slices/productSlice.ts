@@ -148,10 +148,14 @@ const productSlice = createSlice({
         })
         .addCase(fetchProducts.fulfilled, (state, action) => {
           state.loading = false;
-          // Ensure products is always an array
-          state.products = Array.isArray(action.payload.data) ? action.payload.data : [];
-          if (action.payload.pagination) {
-            state.pagination = action.payload.pagination;
+          // Handle both API response formats
+          const products = action.payload.data?.products || action.payload.products || action.payload.data || [];
+          state.products = Array.isArray(products) ? products : [];
+          
+          // Handle pagination from either location
+          const pagination = action.payload.data?.pagination || action.payload.pagination;
+          if (pagination) {
+            state.pagination = pagination;
           }
         })
         .addCase(fetchProducts.rejected, (state, action) => {
@@ -182,10 +186,14 @@ const productSlice = createSlice({
         })
         // Search Products
         .addCase(searchProducts.fulfilled, (state, action) => {
-          // Ensure products is always an array
-          state.products = Array.isArray(action.payload.data) ? action.payload.data : [];
-          if (action.payload.pagination) {
-            state.pagination = action.payload.pagination;
+          // Handle both API response formats
+          const products = action.payload.data?.products || action.payload.products || action.payload.data || [];
+          state.products = Array.isArray(products) ? products : [];
+          
+          // Handle pagination from either location
+          const pagination = action.payload.data?.pagination || action.payload.pagination;
+          if (pagination) {
+            state.pagination = pagination;
           }
         })
         .addCase(searchProducts.rejected, (state) => {

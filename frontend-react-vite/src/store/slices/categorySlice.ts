@@ -79,8 +79,9 @@ const categorySlice = createSlice({
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.loading = false;
-        // Ensure categories is always an array
-        state.categories = Array.isArray(action.payload) ? action.payload : [];
+        // Handle both API response formats
+        const categories = action.payload.data?.categories || action.payload.categories || action.payload.data || action.payload || [];
+        state.categories = Array.isArray(categories) ? categories : [];
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.loading = false;

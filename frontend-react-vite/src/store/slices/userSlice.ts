@@ -69,10 +69,14 @@ const userSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-        // Ensure users is always an array
-        state.users = Array.isArray(action.payload.data) ? action.payload.data : [];
-        if (action.payload.pagination) {
-          state.pagination = action.payload.pagination;
+        // Handle both API response formats
+        const users = action.payload.data?.users || action.payload.users || action.payload.data || [];
+        state.users = Array.isArray(users) ? users : [];
+        
+        // Handle pagination from either location
+        const pagination = action.payload.data?.pagination || action.payload.pagination;
+        if (pagination) {
+          state.pagination = pagination;
         }
       })
       .addCase(fetchUsers.rejected, (state, action) => {

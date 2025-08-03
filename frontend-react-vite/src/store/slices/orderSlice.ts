@@ -113,10 +113,14 @@ const orderSlice = createSlice({
       })
       .addCase(fetchUserOrders.fulfilled, (state, action) => {
         state.loading = false;
-        // Ensure orders is always an array
-        state.orders = Array.isArray(action.payload.data) ? action.payload.data : [];
-        if (action.payload.pagination) {
-          state.pagination = action.payload.pagination;
+        // Handle both API response formats
+        const orders = action.payload.data?.orders || action.payload.orders || action.payload.data || [];
+        state.orders = Array.isArray(orders) ? orders : [];
+        
+        // Handle pagination from either location
+        const pagination = action.payload.data?.pagination || action.payload.pagination;
+        if (pagination) {
+          state.pagination = pagination;
         }
       })
       .addCase(fetchUserOrders.rejected, (state, action) => {
@@ -130,10 +134,14 @@ const orderSlice = createSlice({
       })
       // Fetch All Orders (Admin)
       .addCase(fetchAllOrders.fulfilled, (state, action) => {
-        // Ensure orders is always an array
-        state.orders = Array.isArray(action.payload.data) ? action.payload.data : [];
-        if (action.payload.pagination) {
-          state.pagination = action.payload.pagination;
+        // Handle both API response formats
+        const orders = action.payload.data?.orders || action.payload.orders || action.payload.data || [];
+        state.orders = Array.isArray(orders) ? orders : [];
+        
+        // Handle pagination from either location
+        const pagination = action.payload.data?.pagination || action.payload.pagination;
+        if (pagination) {
+          state.pagination = pagination;
         }
       })
       .addCase(fetchAllOrders.rejected, (state) => {

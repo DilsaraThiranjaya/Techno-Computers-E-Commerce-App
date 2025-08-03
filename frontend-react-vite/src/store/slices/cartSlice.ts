@@ -90,7 +90,8 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.cart = action.payload;
+        // Handle both API response formats
+        state.cart = action.payload.data || action.payload;
       })
       .addCase(fetchCart.rejected, (state, action) => {
         state.loading = false;
@@ -98,11 +99,13 @@ const cartSlice = createSlice({
       })
       // Add to Cart
       .addCase(addToCart.fulfilled, (state, action) => {
-        state.cart = action.payload;
+        // Handle both API response formats
+        state.cart = action.payload.data || action.payload;
       })
       // Update Cart Item
       .addCase(updateCartItem.fulfilled, (state, action) => {
-        state.cart = action.payload;
+        // Handle both API response formats
+        state.cart = action.payload.data || action.payload;
       })
       // Remove from Cart
       .addCase(removeFromCart.fulfilled, (state, action) => {
