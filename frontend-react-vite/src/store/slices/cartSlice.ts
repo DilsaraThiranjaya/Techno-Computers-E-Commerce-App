@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { CartState } from '../../types';
-import { CartResponse } from '../../types/api';
 import apiService from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -10,13 +9,21 @@ const initialState: CartState = {
   error: null,
 };
 
+// Helper function to safely extract cart from API response
+const extractCart = (payload: any) => {
+  if (payload.data) {
+    return payload.data;
+  }
+  return payload;
+};
+
 // Async thunks
 export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
   async (_, { rejectWithValue }) => {
     try {
-      const response: CartResponse = await apiService.getCart() as CartResponse;
-      return response.data;
+      const response = await apiService.getCart();
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch cart');
     }
@@ -27,9 +34,9 @@ export const addToCart = createAsyncThunk(
   'cart/addToCart',
   async (data: { productId: string; quantity: number }, { rejectWithValue }) => {
     try {
-      const response: CartResponse = await apiService.addToCart(data) as CartResponse;
+      const response = await apiService.addToCart(data);
       toast.success('Product added to cart!');
-      return response.data;
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to add to cart');
     }
@@ -40,8 +47,8 @@ export const updateCartItem = createAsyncThunk(
   'cart/updateCartItem',
   async ({ productId, quantity }: { productId: string; quantity: number }, { rejectWithValue }) => {
     try {
-      const response: CartResponse = await apiService.updateCartItem(productId, { quantity }) as CartResponse;
-      return response.data;
+      const response = await apiService.updateCartItem(productId, { quantity });
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update cart item');
     }
@@ -52,9 +59,9 @@ export const removeFromCart = createAsyncThunk(
   'cart/removeFromCart',
   async (productId: string, { rejectWithValue }) => {
     try {
-      await apiService.removeFromCart(productId);
+      const response = await apiService.removeFromCart(productId);
       toast.success('Product removed from cart!');
-      return productId;
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to remove from cart');
     }
@@ -67,6 +74,7 @@ export const clearCart = createAsyncThunk(
     try {
       await apiService.clearCart();
       toast.success('Cart cleared!');
+      return null;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to clear cart');
     }
@@ -90,8 +98,7 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
-        // Handle both API response formats
-        state.cart = action.payload.data || action.payload;
+        state.cart = extractCart(action.payload);
       })
       .addCase(fetchCart.rejected, (state, action) => {
         state.loading = false;
@@ -99,23 +106,15 @@ const cartSlice = createSlice({
       })
       // Add to Cart
       .addCase(addToCart.fulfilled, (state, action) => {
-        // Handle both API response formats
-        state.cart = action.payload.data || action.payload;
+        state.cart = extractCart(action.payload);
       })
       // Update Cart Item
       .addCase(updateCartItem.fulfilled, (state, action) => {
-        // Handle both API response formats
-        state.cart = action.payload.data || action.payload;
+        state.cart = extractCart(action.payload);
       })
       // Remove from Cart
       .addCase(removeFromCart.fulfilled, (state, action) => {
-        if (state.cart) {
-          state.cart.items = state.cart.items.filter(
-            item => item.productId._id !== action.payload
-          );
-          state.cart.totalItems = state.cart.items.reduce((sum, item) => sum + item.quantity, 0);
-          state.cart.totalAmount = state.cart.items.reduce((sum, item) => sum + item.total, 0);
-        }
+        state.cart = extractCart(action.payload);
       })
       // Clear Cart
       .addCase(clearCart.fulfilled, (state) => {

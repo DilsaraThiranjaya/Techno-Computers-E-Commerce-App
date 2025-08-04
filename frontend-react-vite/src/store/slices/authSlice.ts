@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { AuthState, User, LoginForm, RegisterForm } from '../../types';
-import { ApiResponse, LoginResponse, RegisterResponse } from '../../types/api';
 import apiService from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -13,19 +12,37 @@ const initialState: AuthState = {
   error: null,
 };
 
+// Helper function to safely extract auth data from API response
+const extractAuthData = (payload: any) => {
+  if (payload.data) {
+    return payload.data;
+  }
+  return payload;
+};
+
+// Helper function to safely extract user data from API response
+const extractUser = (payload: any) => {
+  if (payload.data) {
+    return payload.data;
+  }
+  return payload;
+};
+
 // Async thunks
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: LoginForm, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<LoginResponse> = await apiService.login(credentials);
-      const { user, accessToken, refreshToken } = response.data;
+      const response = await apiService.login(credentials);
+      const authData = extractAuthData(response);
       
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      if (authData.accessToken && authData.refreshToken) {
+        localStorage.setItem('accessToken', authData.accessToken);
+        localStorage.setItem('refreshToken', authData.refreshToken);
+      }
       
       toast.success('Login successful!');
-      return { user, accessToken, refreshToken };
+      return authData;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
@@ -36,14 +53,16 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (userData: RegisterForm, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<RegisterResponse> = await apiService.register(userData) as ApiResponse<RegisterResponse>;
-      const { user, accessToken, refreshToken } = response.data;
+      const response = await apiService.register(userData);
+      const authData = extractAuthData(response);
       
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      if (authData.accessToken && authData.refreshToken) {
+        localStorage.setItem('accessToken', authData.accessToken);
+        localStorage.setItem('refreshToken', authData.refreshToken);
+      }
       
       toast.success('Registration successful!');
-      return { user, accessToken, refreshToken };
+      return authData;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
     }
@@ -70,8 +89,8 @@ export const getProfile = createAsyncThunk(
   'auth/profile',
   async (_, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<User> = await apiService.getProfile() as ApiResponse<User>;
-      return response.data;
+      const response = await apiService.getProfile();
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
     }
@@ -82,9 +101,9 @@ export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async (userData: Partial<User>, { rejectWithValue }) => {
     try {
-      const response: ApiResponse<User> = await apiService.updateProfile(userData) as ApiResponse<User>;
+      const response = await apiService.updateProfile(userData);
       toast.success('Profile updated successfully!');
-      return response.data;
+      return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to update profile');
     }
@@ -128,9 +147,10 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.accessToken;
-        state.refreshToken = action.payload.refreshToken;
+        const authData = action.payload;
+        state.user = authData.user;
+        state.token = authData.accessToken;
+        state.refreshToken = authData.refreshToken;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -146,9 +166,10 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.accessToken;
-        state.refreshToken = action.payload.refreshToken;
+        const authData = action.payload;
+        state.user = authData.user;
+        state.token = authData.accessToken;
+        state.refreshToken = authData.refreshToken;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -172,7 +193,7 @@ const authSlice = createSlice({
       })
       .addCase(getProfile.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+        state.user = extractUser(action.payload);
       })
       .addCase(getProfile.rejected, (state, action) => {
         state.loading = false;
@@ -180,7 +201,7 @@ const authSlice = createSlice({
       })
       // Update Profile
       .addCase(updateProfile.fulfilled, (state, action) => {
-        state.user = action.payload;
+        state.user = extractUser(action.payload);
       })
       // Change Password
       .addCase(changePassword.pending, (state) => {

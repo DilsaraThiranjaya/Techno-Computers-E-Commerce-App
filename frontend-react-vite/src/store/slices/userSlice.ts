@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { User } from '../../types';
-import { UsersResponse } from '../../types/api';
 import apiService from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -26,12 +25,42 @@ const initialState: UserState = {
   },
 };
 
+// Helper function to safely extract users from API response
+const extractUsers = (payload: any) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (payload.data) {
+    if (Array.isArray(payload.data)) {
+      return payload.data;
+    }
+    if (payload.data.users && Array.isArray(payload.data.users)) {
+      return payload.data.users;
+    }
+  }
+  if (payload.users && Array.isArray(payload.users)) {
+    return payload.users;
+  }
+  return [];
+};
+
+// Helper function to safely extract pagination from API response
+const extractPagination = (payload: any) => {
+  if (payload.pagination) {
+    return payload.pagination;
+  }
+  if (payload.data && payload.data.pagination) {
+    return payload.data.pagination;
+  }
+  return null;
+};
+
 // Async thunks
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
   async (params: any = {}, { rejectWithValue }) => {
     try {
-      const response: UsersResponse = await apiService.getUsers(params) as UsersResponse;
+      const response = await apiService.getUsers(params);
       return response;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');
@@ -69,20 +98,21 @@ const userSlice = createSlice({
       })
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.loading = false;
-        // Handle both API response formats
-        const users = action.payload.data?.users || action.payload.users || action.payload.data || [];
-        state.users = Array.isArray(users) ? users : [];
+        state.users = extractUsers(action.payload);
         
-        // Handle pagination from either location
-        const pagination = action.payload.data?.pagination || action.payload.pagination;
+        const pagination = extractPagination(action.payload);
         if (pagination) {
-          state.pagination = pagination;
+          state.pagination = {
+            currentPage: pagination.currentPage || 1,
+            totalPages: pagination.totalPages || 1,
+            totalItems: pagination.totalItems || 0,
+          };
         }
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-        state.users = []; // Reset to empty array on error
+        state.users = [];
       })
       // Update User Status
       .addCase(updateUserStatus.fulfilled, (state, action) => {

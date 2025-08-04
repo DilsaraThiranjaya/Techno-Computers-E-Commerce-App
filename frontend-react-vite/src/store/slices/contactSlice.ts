@@ -1,4 +1,4 @@
-import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import apiService from '../../services/api.ts';
 import { ContactForm } from '../../types';
 import toast from 'react-hot-toast';
@@ -26,7 +26,7 @@ const initialState: ContactState = {
 };
 
 export const sendContactMessage = createAsyncThunk(
-    'contact',
+    'contact/sendMessage',
     async (data: ContactForm, { rejectWithValue }) => {
         try {
             const response = await apiService.sendContactMessage(data);
@@ -43,6 +43,9 @@ const contactSlice = createSlice({
     reducers: {
         updateContact: (state, action) => {
             state.contact = action.payload;
+        },
+        clearError: (state) => {
+            state.error = null;
         },
     },
     extraReducers: (builder) => {
@@ -64,5 +67,5 @@ const contactSlice = createSlice({
     },
 });
 
-export const { updateContact } = contactSlice.actions;
+export const { updateContact, clearError } = contactSlice.actions;
 export default contactSlice.reducer;

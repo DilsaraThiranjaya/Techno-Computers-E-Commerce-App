@@ -125,20 +125,28 @@ class ApiService {
   // Products
   async getProducts(params?: any) {
     const queryString = params ? new URLSearchParams(params).toString() : '';
-    return this.get(`/products${queryString ? `?${queryString}` : ''}`);
+    const response = await this.get(`/products${queryString ? `?${queryString}` : ''}`);
+    console.log('getProducts response:', response);
+    return response;
   }
 
   async getFeaturedProducts(limit?: number) {
-    return this.get(`/products/featured${limit ? `?limit=${limit}` : ''}`);
+    const response = await this.get(`/products/featured${limit ? `?limit=${limit}` : ''}`);
+    console.log('getFeaturedProducts response:', response);
+    return response;
   }
 
   async getProductById(id: string) {
-    return this.get(`/products/${id}`);
+    const response = await this.get(`/products/${id}`);
+    console.log('getProductById response:', response);
+    return response;
   }
 
   async searchProducts(params: any) {
     const queryString = new URLSearchParams(params).toString();
-    return this.get(`/products/search?${queryString}`);
+    const response = await this.get(`/products/search?${queryString}`);
+    console.log('searchProducts response:', response);
+    return response;
   }
 
   async createProduct(data: any) {

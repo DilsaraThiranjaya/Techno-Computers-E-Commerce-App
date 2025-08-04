@@ -20,6 +20,40 @@ const initialState: ProductState = {
   filters: {},
 };
 
+// Helper function to safely extract products from API response
+const extractProducts = (payload: any): Product[] => {
+  // Handle different response structures
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (payload.data) {
+    if (Array.isArray(payload.data)) {
+      return payload.data;
+    }
+    if (payload.data.products && Array.isArray(payload.data.products)) {
+      return payload.data.products;
+    }
+    if (payload.data.data && Array.isArray(payload.data.data)) {
+      return payload.data.data;
+    }
+  }
+  if (payload.products && Array.isArray(payload.products)) {
+    return payload.products;
+  }
+  return [];
+};
+
+// Helper function to safely extract pagination from API response
+const extractPagination = (payload: any) => {
+  if (payload.pagination) {
+    return payload.pagination;
+  }
+  if (payload.data && payload.data.pagination) {
+    return payload.data.pagination;
+  }
+  return null;
+};
+
 // Async thunks
 export const fetchProducts = createAsyncThunk(
     'products/fetchProducts',
@@ -32,7 +66,7 @@ export const fetchProducts = createAsyncThunk(
           delete params.sortBy;
           delete params.sortOrder;
         }
-        const response: ProductsResponse = await apiService.getProducts(params) as ProductsResponse;
+        const response = await apiService.getProducts(params);
         return response;
       } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || 'Failed to fetch products');
@@ -44,8 +78,8 @@ export const fetchFeaturedProducts = createAsyncThunk(
     'products/fetchFeaturedProducts',
     async (limit: number = 8, { rejectWithValue }) => {
       try {
-        const response: FeaturedProductsResponse = await apiService.getFeaturedProducts(limit) as FeaturedProductsResponse;
-        return response.data;
+        const response = await apiService.getFeaturedProducts(limit);
+        return response;
       } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || 'Failed to fetch featured products');
       }
@@ -56,8 +90,8 @@ export const fetchProductById = createAsyncThunk(
     'products/fetchProductById',
     async (id: string, { rejectWithValue }) => {
       try {
-        const response: ApiResponse<Product> = await apiService.getProductById(id) as ApiResponse<Product>;
-        return response.data;
+        const response = await apiService.getProductById(id);
+        return response;
       } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || 'Failed to fetch product');
       }
@@ -75,7 +109,7 @@ export const searchProducts = createAsyncThunk(
           delete params.sortBy;
           delete params.sortOrder;
         }
-        const response: ProductsResponse = await apiService.searchProducts(params) as ProductsResponse;
+        const response = await apiService.searchProducts(params);
         return response;
       } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || 'Failed to search products');
@@ -87,9 +121,9 @@ export const createProduct = createAsyncThunk(
     'products/createProduct',
     async (productData: any, { rejectWithValue }) => {
       try {
-        const response: ApiResponse<Product> = await apiService.createProduct(productData) as ApiResponse<Product>;
+        const response = await apiService.createProduct(productData);
         toast.success('Product created successfully!');
-        return response.data;
+        return response;
       } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || 'Failed to create product');
       }
@@ -100,9 +134,9 @@ export const updateProduct = createAsyncThunk(
     'products/updateProduct',
     async ({ id, data }: { id: string; data: any }, { rejectWithValue }) => {
       try {
-        const response: ApiResponse<Product> = await apiService.updateProduct(id, data) as ApiResponse<Product>;
+        const response = await apiService.updateProduct(id, data);
         toast.success('Product updated successfully!');
-        return response.data;
+        return response;
       } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || 'Failed to update product');
       }
@@ -148,28 +182,30 @@ const productSlice = createSlice({
         })
         .addCase(fetchProducts.fulfilled, (state, action) => {
           state.loading = false;
-          // Handle both API response formats
-          const products = action.payload.data?.products || action.payload.products || action.payload.data || [];
-          state.products = Array.isArray(products) ? products : [];
+          state.products = extractProducts(action.payload);
           
-          // Handle pagination from either location
-          const pagination = action.payload.data?.pagination || action.payload.pagination;
+          const pagination = extractPagination(action.payload);
           if (pagination) {
-            state.pagination = pagination;
+            state.pagination = {
+              currentPage: pagination.currentPage || 1,
+              totalPages: pagination.totalPages || 1,
+              totalItems: pagination.totalItems || 0,
+              hasNextPage: pagination.hasNextPage || false,
+              hasPrevPage: pagination.hasPrevPage || false,
+            };
           }
         })
         .addCase(fetchProducts.rejected, (state, action) => {
           state.loading = false;
           state.error = action.payload as string;
-          state.products = []; // Reset to empty array on error
+          state.products = [];
         })
         // Fetch Featured Products
         .addCase(fetchFeaturedProducts.fulfilled, (state, action) => {
-          // Ensure featuredProducts is always an array
-          state.featuredProducts = Array.isArray(action.payload) ? action.payload : [];
+          state.featuredProducts = extractProducts(action.payload);
         })
         .addCase(fetchFeaturedProducts.rejected, (state) => {
-          state.featuredProducts = []; // Reset to empty array on error
+          state.featuredProducts = [];
         })
         // Fetch Product by ID
         .addCase(fetchProductById.pending, (state) => {
@@ -178,7 +214,12 @@ const productSlice = createSlice({
         })
         .addCase(fetchProductById.fulfilled, (state, action) => {
           state.loading = false;
-          state.currentProduct = action.payload;
+          // Handle single product response
+          if (action.payload.data) {
+            state.currentProduct = action.payload.data;
+          } else {
+            state.currentProduct = action.payload;
+          }
         })
         .addCase(fetchProductById.rejected, (state, action) => {
           state.loading = false;
@@ -186,31 +227,40 @@ const productSlice = createSlice({
         })
         // Search Products
         .addCase(searchProducts.fulfilled, (state, action) => {
-          // Handle both API response formats
-          const products = action.payload.data?.products || action.payload.products || action.payload.data || [];
-          state.products = Array.isArray(products) ? products : [];
+          state.products = extractProducts(action.payload);
           
-          // Handle pagination from either location
-          const pagination = action.payload.data?.pagination || action.payload.pagination;
+          const pagination = extractPagination(action.payload);
           if (pagination) {
-            state.pagination = pagination;
+            state.pagination = {
+              currentPage: pagination.currentPage || 1,
+              totalPages: pagination.totalPages || 1,
+              totalItems: pagination.totalItems || 0,
+              hasNextPage: pagination.hasNextPage || false,
+              hasPrevPage: pagination.hasPrevPage || false,
+            };
           }
         })
         .addCase(searchProducts.rejected, (state) => {
-          state.products = []; // Reset to empty array on error
+          state.products = [];
         })
         // Create Product
         .addCase(createProduct.fulfilled, (state, action) => {
-          state.products.unshift(action.payload);
+          const newProduct = action.payload.data || action.payload;
+          if (newProduct) {
+            state.products.unshift(newProduct);
+          }
         })
         // Update Product
         .addCase(updateProduct.fulfilled, (state, action) => {
-          const index = state.products.findIndex(p => p._id === action.payload._id);
-          if (index !== -1) {
-            state.products[index] = action.payload;
-          }
-          if (state.currentProduct?._id === action.payload._id) {
-            state.currentProduct = action.payload;
+          const updatedProduct = action.payload.data || action.payload;
+          if (updatedProduct) {
+            const index = state.products.findIndex(p => p._id === updatedProduct._id);
+            if (index !== -1) {
+              state.products[index] = updatedProduct;
+            }
+            if (state.currentProduct?._id === updatedProduct._id) {
+              state.currentProduct = updatedProduct;
+            }
           }
         })
         // Delete Product

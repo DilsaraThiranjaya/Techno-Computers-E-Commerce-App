@@ -16,8 +16,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, isCustomer } = useAuth();
 
-  console.log(product);
-
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!isAuthenticated) {
